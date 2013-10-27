@@ -153,7 +153,18 @@ func (g *GoogleComputeClient) createInstance(zone string, instanceConfig *Instan
 	return operation, nil
 }
 
-// sliceToTags converts a slice of strings to a *compute.Tags.
+// mapToMetadata converts a map[string]string to a *compute.Metadata.
+func mapToMetadata(metadata map[string]string) *compute.Metadata {
+	items := make([]*compute.MetadataItems, len(metadata))
+	for k, v := range metatadata {
+		items = append(&compute.MetadataItems{k, v})
+	}
+	return &compute.Metadata{
+		Items: items,
+	}
+}
+
+// sliceToTags converts a []string to a *compute.Tags.
 func sliceToTags(tags []string) *compute.Tags {
 	return &compute.Tags{
 		Items: tags,
