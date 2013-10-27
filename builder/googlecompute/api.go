@@ -88,14 +88,14 @@ func (g *GoogleComputeClient) getMachineType(name, zone string) (*compute.Machin
 // It returns an error if any.
 func (g *GoogleComputeClient) getImage(name string) (*compute.Image, error) {
 	// First try and find the image in the users project
-	imagesGetCall := g.Service.ImagesService.Get(g.ProjectId, name)
+	imagesGetCall := g.Service.Images.Get(g.ProjectId, name)
 	image, err := imagesGetCall.Do()
 	if err != nil {
 		log.Printf("Cannot find image: %s in project %s", name, g.ProjectId)
 	}
 	// Now try and find the image in the debian-cloud
-	imagesGetCall := g.Service.ImagesService.Get("debian-cloud", name)
-	image, err := imagesGetCall.Do()
+	imagesGetCall = g.Service.Images.Get("debian-cloud", name)
+	image, err = imagesGetCall.Do()
 	if err != nil {
 		log.Printf("Cannot find image: %s in project %s", name, g.ProjectId)
 	}
@@ -110,7 +110,7 @@ func (g *GoogleComputeClient) getImage(name string) (*compute.Image, error) {
 // getNetwork returns a *compute.Network representing the named network.
 // It returns an error if any.
 func (g *GoogleComputeClient) getNetwork(name string) (*compute.Network, error) {
-	networkGetCall := g.Service.NetworkService.Get(g.ProjectId, name)
+	networkGetCall := g.Service.Networks.Get(g.ProjectId, name)
 	network, err := networkGetCall.Do()
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ type InstanceConfig struct {
 	Metadata          *compute.Metadata
 	Name              string
 	NetworkInterfaces []*compute.NetworkInterface
-	Tags              []*compute.Tags
+	Tags              *compute.Tags
 }
 
 // createInstance.
@@ -141,7 +141,7 @@ func (g *GoogleComputeClient) createInstance(zone string, instanceConfig *Instan
 		NetworkInterfaces: instanceConfig.NetworkInterfaces,
 		Tags:              instanceConfig.Tags,
 	}
-	instanceInsertCall := g.Service.InstanceService.Insert(g.ProjectId, zone, instance)
+	instanceInsertCall := g.Service.Instances.Insert(g.ProjectId, zone, instance)
 	operation, err := instanceInsertCall.Do()
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func (g *GoogleComputeClient) createInstance(zone string, instanceConfig *Instan
 
 // NewNetworkInterface returns a *compute.NetworkInterface.
 func NewNetworkInterface(network *compute.Network, public bool) *compute.NetworkInterface {
-	accessConfigs := make([]*compute.AccessConfig)
+	accessConfigs := make([]*compute.AccessConfig, 0)
 	if public {
 		c := &compute.AccessConfig{
 			Name: "AccessConfig created by Packer",
@@ -168,7 +168,7 @@ func NewNetworkInterface(network *compute.Network, public bool) *compute.Network
 // mapToMetadata converts a map[string]string to a *compute.Metadata.
 func mapToMetadata(metadata map[string]string) *compute.Metadata {
 	items := make([]*compute.MetadataItems, len(metadata))
-	for k, v := range metatadata {
+	for k, v := range metadata {
 		items = append(items, &compute.MetadataItems{k, v})
 	}
 	return &compute.Metadata{

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -15,8 +16,8 @@ var (
 )
 
 func init() {
-	flag.StringVar(&clientSecretsFile, "-s", "", "path to client secrets file.")
-	flag.StringVar(&privateKeyFile, "-k", "", "path to private key file.")
+	flag.StringVar(&clientSecretsFile, "s", "", "path to client secrets file.")
+	flag.StringVar(&privateKeyFile, "k", "", "path to private key file.")
 }
 
 func main() {
@@ -24,19 +25,17 @@ func main() {
 	if clientSecretsFile == "" || privateKeyFile == "" {
 		log.Fatal("-s and -k are required")
 	}
-	pemKeyBytes, err := ioutil.ReadFile(clientSecretsFile)
+	pemKeyBytes, err := ioutil.ReadFile(privateKeyFile)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	clientSecretsBytes, err := ioutil.ReadFile(privateKeyFile)
+	clientSecretsBytes, err := ioutil.ReadFile(clientSecretsFile)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	var clientSecrets *googlecompute.ClientSecrets
-	err = json.Unmarshal(clientSecretsBytes, clientSecrets)
+	err = json.Unmarshal(clientSecretsBytes, &clientSecrets)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	print(pemKeyBytes)
-	print(clientSecrets)
 }
