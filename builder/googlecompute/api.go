@@ -80,18 +80,40 @@ func (g *GoogleComputeClient) getZoneURL(name string) (string, error) {
 // getMachineTypeURL returns the fully-qualified URL of the named machine type.
 // It returns an error if any.
 func (g *GoogleComputeClient) getMachineTypeURL(name, zone string) (string, error) {
-
-	machineTypesCall := g.Service.MachineTypes.List(g.ProjectID, zone)
-	machineTypeList, err := machineTypesCall.Do()
+	machineTypesGetCall := g.Service.MachineTypes.Get(g.ProjectID, zone, name)
+	machineType, err := machineTypesGetCall.Do()
 	if err != nil {
 		return "", err
 	}
-	for _, mt := range machineTypeList.Items {
-		if mt.Name == name && mt.Deprecated == nil {
-			return mt.SelfLink, nil
-		}
+	if machineType.Deprecated == nil {
+		return machineType.SelfLink, nil
 	}
 	return "", errors.New("Machine Type does not exist: " + name)
+}
+
+// getImageUrl returns the fully-qualified URL of the named image. If the named
+// image is not available at the users project, the fall back projects are
+// checked.
+// It returns an error if any.
+func (g *GoogleComputeClient) getImageUrl(name string) (string, error) {
+	// First try and find the image in the users project
+	imagesGetCall := g.Service.ImagesService.Get(g.ProjectId, name)
+	image, err := imagesGetCall.Do()
+	if err != nil {
+		log.Printf("Cannot find image: %s in project %s", name, g.ProjectId)
+	}
+	// Now try and find the image in the debian-cloud
+	imagesGetCall := g.Service.ImagesService.Get("debian-cloud", name)
+	image, err := imagesGetCall.Do()
+	if err != nil {
+		log.Printf("Cannot find image: %s in project %s", name, g.ProjectId)
+	}
+	if image != nil {
+		if image.SelfLink != "" {
+			return image.SelfLink, nil
+		}
+	}
+	return "", errors.New("Image does not exist: " + name)
 }
 
 // scopes return a space separated list of scopes.
