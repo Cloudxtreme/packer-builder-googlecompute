@@ -11,7 +11,7 @@ import (
 	"code.google.com/p/google-api-go-client/compute/v1beta16"
 )
 
-// ClientSecrets represents the parsed client secrets of a Google Compute
+// ClientSecrets represents the parsed client secrets of a Google Compute Engine
 // service account.
 type ClientSecrets struct {
 	Web struct {
@@ -29,7 +29,20 @@ type GoogleComputeClient struct {
 	clientSecrets *ClientSecrets
 }
 
-// New return a new GoogleComputeClient.
+// InstanceConfig represents a Google Compute Engine instance configuration.
+// Used for creating machine instances.
+type InstanceConfig struct {
+	Description       string
+	Image             string
+	MachineType       string
+	Metadata          *compute.Metadata
+	Name              string
+	NetworkInterfaces []*compute.NetworkInterface
+	Tags              *compute.Tags
+}
+
+// New return a new GoogleComputeClient. The projectId must be the project name,
+// i.e. myproject, not the project number.
 func New(projectId string, c *ClientSecrets, pemKey []byte) (*GoogleComputeClient, error) {
 	googleComputeClient := &GoogleComputeClient{}
 	googleComputeClient.ProjectId = projectId
@@ -59,7 +72,7 @@ func New(projectId string, c *ClientSecrets, pemKey []byte) (*GoogleComputeClien
 	return googleComputeClient, nil
 }
 
-// getZone returns a *compute.Zone representing the named zone.
+// GetZone returns a *compute.Zone representing the named zone.
 // It returns an error if any.
 func (g *GoogleComputeClient) GetZone(name string) (*compute.Zone, error) {
 	zoneGetCall := g.Service.Zones.Get(g.ProjectId, name)
@@ -70,7 +83,7 @@ func (g *GoogleComputeClient) GetZone(name string) (*compute.Zone, error) {
 	return zone, nil
 }
 
-// getMachineType returns a *compute.MachineType representing the named machine type.
+// GetMachineType returns a *compute.MachineType representing the named machine type.
 // It returns an error if any.
 func (g *GoogleComputeClient) GetMachineType(name, zone string) (*compute.MachineType, error) {
 	machineTypesGetCall := g.Service.MachineTypes.Get(g.ProjectId, zone, name)
@@ -118,18 +131,9 @@ func (g *GoogleComputeClient) GetNetwork(name string) (*compute.Network, error) 
 	return network, nil
 }
 
-// InstanceConfig
-type InstanceConfig struct {
-	Description       string
-	Image             string
-	MachineType       string
-	Metadata          *compute.Metadata
-	Name              string
-	NetworkInterfaces []*compute.NetworkInterface
-	Tags              *compute.Tags
-}
-
-// createInstance.
+// CreateInstance creates an instance in Google Compute Engine based on the
+// supplied instanceConfig.
+// It returns an error if any.
 func (g *GoogleComputeClient) CreateInstance(zone string, instanceConfig *InstanceConfig) (*compute.Operation, error) {
 	// Attache disk
 	instance := &compute.Instance{
