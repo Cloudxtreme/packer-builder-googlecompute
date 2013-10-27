@@ -116,6 +116,21 @@ func (g *GoogleComputeClient) getImageUrl(name string) (string, error) {
 	return "", errors.New("Image does not exist: " + name)
 }
 
+// createDisk.
+func (g *GoogleComputeClient) createDisk(name, sourceImageUrl string) (string, error) {
+	disk := &compute.Disk{
+		Description: "Disk created by Packer",
+		Name:        name,
+	}
+	disksInsertCall := g.Service.DisksService.Insert(g.ProjectId, zone, disk)
+	disksInsertCall.SourceImage(sourceImageUrl)
+	operation, err := disksInsertCall.Do()
+	if err != nil {
+		return "", err
+	}
+	return operation.TargetLink, nil
+}
+
 // scopes return a space separated list of scopes.
 func scopes() string {
 	s := []string{
