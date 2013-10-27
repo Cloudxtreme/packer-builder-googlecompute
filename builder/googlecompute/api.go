@@ -112,22 +112,45 @@ func (g *GoogleComputeClient) getImage(name string) (*compute.Image, error) {
 // getNetwork returns a *compute.Network representing the named network.
 // It returns an error if any.
 func (g *GoogleComputeClient) getNetwork(name string) (*compute.Network, error) {
-	// Not yet.
+	networkGetCall := g.Service.NetworkService.Get(g.ProjectId, name)
+	network, err := networkGetCall.Do()
+	if err != nil {
+		return nil, err
+	}
+	return network, nil
 }
 
-// createDisk.
-func (g *GoogleComputeClient) createDisk(name, sourceImageUrl string) (string, error) {
-	disk := &compute.Disk{
-		Description: "Disk created by Packer",
-		Name:        name,
+// InstanceConfig
+type InstanceConfig struct {
+	Description       string
+	Image             string
+	MachineType       string
+	Metadata          *compute.Metadata
+	Name              string
+	NetworkInterfaces []*compute.NetworkInterface
+	ServiceAccounts   []*compute.ServiceAccount
+	Tags              []*compute.Tags
+}
+
+// createInstance.
+func (g *GoogleComputeClient) createInstance(zone string, instanceConfig *InstanceConfig) (*compute.Operation, error) {
+	// Attache disk
+	instance := &compute.Instance{
+		Description:       instanceConfig.Description,
+		Image:             instanceConfig.Image,
+		MachineType:       instanceConfig.MachineType,
+		Metadata:          instanceConfig.Metadata,
+		Name:              instanceConfig.Name,
+		NetworkInterfaces: instanceConfig.NetworkInterfaces,
+		ServiceAccounts:   instanceConfig.ServiceAccounts,
+		Tags:              instanceConfig.Tags,
 	}
-	disksInsertCall := g.Service.DisksService.Insert(g.ProjectId, zone, disk)
-	disksInsertCall.SourceImage(sourceImageUrl)
-	operation, err := disksInsertCall.Do()
+	instanceInsertCall := g.Service.InstanceService.Insert(g.ProjectId, zone, instance)
+	operation, err := instanceInsertCall.Do()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return operation.TargetLink, nil
+	return operation, nil
 }
 
 // scopes return a space separated list of scopes.
