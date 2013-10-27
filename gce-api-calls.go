@@ -22,7 +22,12 @@ type MachineType struct {
 	Zone  string
 }
 
-type ZoneMap map[string]bool
+type ZoneMap map[string]*Zone
+
+type Zone struct {
+	Name string
+	Url  string
+}
 
 type ClientSecrets struct {
 	Web struct {
@@ -91,7 +96,10 @@ func main() {
 		log.Fatal("Failed on zonelist call", err.Error())
 	}
 	for _, z := range zoneList.Items {
-		zoneMap[z.Name] = true
+		zoneMap[z.Name] = &Zone{
+			Name: z.Name,
+			Url:  z.SelfLink,
+		}
 	}
 
 	if _, ok := zoneMap[zone]; !ok {
