@@ -153,6 +153,13 @@ func (g *GoogleComputeClient) createInstance(zone string, instanceConfig *Instan
 	return operation, nil
 }
 
+// sliceToTags converts a slice of strings to a *compute.Tags.
+func sliceToTags(tags []string) *compute.Tags {
+	return &compute.Tags{
+		Items: tags,
+	}
+}
+
 // scopes return a space separated list of scopes.
 func scopes() string {
 	s := []string{
