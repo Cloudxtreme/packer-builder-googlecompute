@@ -1,9 +1,7 @@
 package googlecompute
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
+	"errors"
 	"log"
 	"net/http"
 	"strings"
@@ -31,24 +29,24 @@ type GoogleComputeClient struct {
 	clientSecrets *ClientSecrets
 }
 
-// NewGoogleComputeClient return a new GoogleComputeClient.
-func NewGoogleComputeClient(c *ClientSecrets, pemKey []byte) (*GoogleComputeClient, error) {
+// New return a new GoogleComputeClient.
+func New(c *ClientSecrets, pemKey []byte) (*GoogleComputeClient, error) {
 	googleComputeClient := &GoogleComputeClient{}
-	googleComputeClient.ProjectId = extractProjectId(c.Web.ClientID)
+	googleComputeClient.ProjectId = extractProjectId(c.Web.ClientId)
 	// Get the access token.
 	t := jwt.NewToken(c.Web.ClientEmail, scopes(), pemKey)
 	t.ClaimSet.Aud = c.Web.TokenURI
-	c := &http.Client{}
-	token, err := t.Assert(c)
+	httpClient := &http.Client{}
+	token, err := t.Assert(httpClient)
 	if err != nil {
 		return nil, err
 	}
 	// Create the Google Compute client.
 	config := &oauth.Config{
-		ClientId: clientSecrets.Web.ClientID,
-		Scope:    scope,
-		TokenURL: clientSecrets.Web.TokenURI,
-		AuthURL:  clientSecrets.Web.AuthURI,
+		ClientId: c.Web.ClientId,
+		Scope:    scopes(),
+		TokenURL: c.Web.TokenURI,
+		AuthURL:  c.Web.AuthURI,
 	}
 	transport := &oauth.Transport{Config: config}
 	transport.Token = token
@@ -64,7 +62,7 @@ func NewGoogleComputeClient(c *ClientSecrets, pemKey []byte) (*GoogleComputeClie
 // getZone returns a *compute.Zone representing the named zone.
 // It returns an error if any.
 func (g *GoogleComputeClient) getZone(name string) (*compute.Zone, error) {
-	zoneGetCall := g.Service.Zones.Get(g.ProjectID, name)
+	zoneGetCall := g.Service.Zones.Get(g.ProjectId, name)
 	zone, err := zoneGetCall.Do()
 	if err != nil {
 		return nil, err
@@ -75,7 +73,7 @@ func (g *GoogleComputeClient) getZone(name string) (*compute.Zone, error) {
 // getMachineType returns a *compute.MachineType representing the named machine type.
 // It returns an error if any.
 func (g *GoogleComputeClient) getMachineType(name, zone string) (*compute.MachineType, error) {
-	machineTypesGetCall := g.Service.MachineTypes.Get(g.ProjectID, zone, name)
+	machineTypesGetCall := g.Service.MachineTypes.Get(g.ProjectId, zone, name)
 	machineType, err := machineTypesGetCall.Do()
 	if err != nil {
 		return nil, err
