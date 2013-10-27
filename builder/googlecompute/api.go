@@ -128,7 +128,6 @@ type InstanceConfig struct {
 	Metadata          *compute.Metadata
 	Name              string
 	NetworkInterfaces []*compute.NetworkInterface
-	ServiceAccounts   []*compute.ServiceAccount
 	Tags              []*compute.Tags
 }
 
@@ -142,7 +141,6 @@ func (g *GoogleComputeClient) createInstance(zone string, instanceConfig *Instan
 		Metadata:          instanceConfig.Metadata,
 		Name:              instanceConfig.Name,
 		NetworkInterfaces: instanceConfig.NetworkInterfaces,
-		ServiceAccounts:   instanceConfig.ServiceAccounts,
 		Tags:              instanceConfig.Tags,
 	}
 	instanceInsertCall := g.Service.InstanceService.Insert(g.ProjectId, zone, instance)
@@ -153,11 +151,27 @@ func (g *GoogleComputeClient) createInstance(zone string, instanceConfig *Instan
 	return operation, nil
 }
 
+// NewNetworkInterface returns a *compute.NetworkInterface.
+func NewNetworkInterface(network *compute.Network, public bool) *compute.NetworkInterface {
+	accessConfigs := make([]*compute.AccessConfig)
+	if public {
+		c := &compute.AccessConfig{
+			Name: "AccessConfig created by Packer",
+			Type: "ONE_TO_ONE_NAT",
+		}
+		accessConfigs = append(accessConfigs, c)
+	}
+	return &compute.NetworkInterface{
+		AccessConfigs: accessConfigs,
+		Network:       network.SelfLink,
+	}
+}
+
 // mapToMetadata converts a map[string]string to a *compute.Metadata.
 func mapToMetadata(metadata map[string]string) *compute.Metadata {
 	items := make([]*compute.MetadataItems, len(metadata))
 	for k, v := range metatadata {
-		items = append(&compute.MetadataItems{k, v})
+		items = append(items, &compute.MetadataItems{k, v})
 	}
 	return &compute.Metadata{
 		Items: items,
