@@ -61,41 +61,34 @@ func NewGoogleComputeClient(c *ClientSecrets, pemKey []byte) (*GoogleComputeClie
 	return googleComputeClient, nil
 }
 
-// getZoneURL returns the fully-qualified URL of the named zone resource.
+// getZone returns a *compute.Zone representing the named zone.
 // It returns an error if any.
-func (g *GoogleComputeClient) getZoneURL(name string) (string, error) {
-	zoneListCall := g.Service.Zones.List(g.ProjectID)
-	zoneList, err := zoneListCall.Do()
+func (g *GoogleComputeClient) getZone(name string) (*compute.Zone, error) {
+	zoneGetCall := g.Service.Zones.Get(g.ProjectID, name)
+	zone, err := zoneGetCall.Do()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	for _, z := range zoneList.Items {
-		if z.Name == name {
-			return z.SelfLink, nil
-		}
-	}
-	return "", errors.New("Zone does not exits: " + name)
+	return zone, nil
 }
 
-// getMachineTypeURL returns the fully-qualified URL of the named machine type.
+// getMachineType returns a *compute.MachineType representing the named machine type.
 // It returns an error if any.
-func (g *GoogleComputeClient) getMachineTypeURL(name, zone string) (string, error) {
+func (g *GoogleComputeClient) getMachineType(name, zone string) (*compute.MachineType, error) {
 	machineTypesGetCall := g.Service.MachineTypes.Get(g.ProjectID, zone, name)
 	machineType, err := machineTypesGetCall.Do()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if machineType.Deprecated == nil {
-		return machineType.SelfLink, nil
+		return machineType, nil
 	}
-	return "", errors.New("Machine Type does not exist: " + name)
+	return nil, errors.New("Machine Type does not exist: " + name)
 }
 
-// getImageUrl returns the fully-qualified URL of the named image. If the named
-// image is not available at the users project, the fall back projects are
-// checked.
+// getImage returns a *compute.Image representing the named image.
 // It returns an error if any.
-func (g *GoogleComputeClient) getImageUrl(name string) (string, error) {
+func (g *GoogleComputeClient) getImage(name string) (*compute.Image, error) {
 	// First try and find the image in the users project
 	imagesGetCall := g.Service.ImagesService.Get(g.ProjectId, name)
 	image, err := imagesGetCall.Do()
@@ -110,10 +103,16 @@ func (g *GoogleComputeClient) getImageUrl(name string) (string, error) {
 	}
 	if image != nil {
 		if image.SelfLink != "" {
-			return image.SelfLink, nil
+			return image, nil
 		}
 	}
-	return "", errors.New("Image does not exist: " + name)
+	return nil, errors.New("Image does not exist: " + name)
+}
+
+// getNetwork returns a *compute.Network representing the named network.
+// It returns an error if any.
+func (g *GoogleComputeClient) getNetwork(name string) (*compute.Network, error) {
+	// Not yet.
 }
 
 // createDisk.
