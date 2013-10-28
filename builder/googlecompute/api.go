@@ -163,31 +163,27 @@ func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	/*
-	ip := ""
-	if instance.Status == "RUNNING" {
-		ip = findNatIP(instance.NetworkInterfaces)
-	}
-	*/
 	return instance.Status, nil
 }
 
-// findNatIp.
-func findNatIP(networkInterfaces []*compute.NetworkInterface) string {
-	if networkInterfaces == nil {
-		return ""
+// GetNatIp.
+func (g *GoogleComputeClient) GetNatIP(zone, name string) (string, error) {
+	instanceGetCall := g.Service.Instances.Get(g.ProjectId, zone, name)
+	instance, err := instanceGetCall.Do()
+	if err != nil {
+		return "", err
 	}
-	for _, ni := range networkInterfaces {
+	for _, ni := range instance.NetworkInterfaces {
 		if ni.AccessConfigs == nil {
 			continue
 		}
 		for _, ac := range ni.AccessConfigs {
 			if ac.NatIP != "" {
-				return ac.NatIP
+				return ac.NatIP, nil
 			}
 		}
 	}
-	return ""
+	return "", nil
 }
 
 // ZoneOperationStatus.

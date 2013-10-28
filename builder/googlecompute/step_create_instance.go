@@ -76,9 +76,16 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
+	ui.Say("Waiting for the instance to be created...")
+	err = waitForZoneOperationState("DONE", c.Zone, operation.Name, client, c.stateTimeout)
+	if err != nil {
+		err := fmt.Errorf("Error creating instance: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
 	// Update the state.
 	state.Put("instance_name", name)
-	state.Put("instance_operation_name", operation.Name)
 	s.instanceName = name
 	return multistep.ActionContinue
 }

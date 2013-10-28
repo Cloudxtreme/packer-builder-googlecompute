@@ -13,23 +13,21 @@ func (s *stepInstanceInfo) Run(state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 	c := state.Get("config").(config)
 	instanceName := state.Get("instance_name").(string)
-	instanceOperationName := state.Get("instance_operation_name").(string)
-	ui.Say("Waiting for the instance to start...")
-	err := waitForZoneOperationState("DONE", c.Zone, instanceOperationName, client, c.stateTimeout)
+	err := waitForInstanceState("RUNNING", c.Zone, instanceName, client, c.stateTimeout)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	err = waitForInstanceState("RUNNING", c.Zone, instanceName, client, c.stateTimeout)
+	ip, err := client.GetNatIP(c.Zone, instanceName)
 	if err != nil {
-		err := fmt.Errorf("Error creating instance: %s", err)
+		err := fmt.Errorf("Error retrieving instance nat ip address: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	state.Put("instance_ip", "not yet")
+	state.Put("instance_ip", ip)
 	return multistep.ActionContinue
 }
 
