@@ -181,6 +181,22 @@ func (g *GoogleComputeClient) ZoneOperationStatus(zone, name string) (string, er
 	return operation.Status, nil
 }
 
+// GlobalOperationStatus.
+func (g *GoogleComputeClient) GlobalOperationStatus(name string) (string, error) {
+	globalOperationsGetCall := g.Service.GlobalOperations.Get(g.ProjectId, name)
+	operation, err := globalOperationsGetCall.Do()
+	if err != nil {
+		return "", err
+	}
+	if operation.Status == "DONE" {
+		err = processOperationStatus(operation)
+		if err != nil {
+			return operation.Status, err
+		}
+	}
+	return operation.Status, nil
+}
+
 // processOperationStatus.
 func processOperationStatus(o *compute.Operation) error {
 	if o.Error != nil {
@@ -193,7 +209,19 @@ func processOperationStatus(o *compute.Operation) error {
 	return nil
 }
 
+// DeleteImage deletes the named image.
+// Returns a Global Operation and an error if any.
+func (g *GoogleComputeClient) DeleteImage(name string) (*compute.Operation, error) {
+	imagesDeleteCall := g.Service.Images.Delete(g.ProjectId, name)
+	operation, err := imagesDeleteCall.Do()
+	if err != nil {
+		return nil, err
+	}
+	return operation, nil
+}
+
 // DeleteInstance deletes the named instance.
+// Returns a Zone Operation and an error if any.
 func (g *GoogleComputeClient) DeleteInstance(zone, name string) (*compute.Operation, error) {
 	instanceDeleteCall := g.Service.Instances.Delete(g.ProjectId, zone, name)
 	operation, err := instanceDeleteCall.Do()
