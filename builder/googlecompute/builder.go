@@ -43,6 +43,8 @@ type config struct {
 	Zone                string            `mapstructure:"zone"`
 	sshTimeout          time.Duration
 	stateTimeout        time.Duration
+	clientSecrets       *ClientSecrets
+	privateKeyBytes     []byte
 	tpl                 *packer.ConfigTemplate
 }
 
@@ -51,7 +53,59 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 }
 
 func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packer.Artifact, error) {
-	// Nothing yet.
+	// Initialize the Google Compute Engine api.
+	client, err := googlecompute.New(b.config.ProjectId, b.config.Zone, b.config.clientSecrets, b.config.privateKeyBytes)
+	if err != nil {
+		log.Println("Failed to create the Google Compute Engine client.")
+		return nil, err
+	}
+
+	// Set up the state.
+	state := new(multistep.BasicStateBag)
+	state.Put("config", b.config)
+	state.Put("client", client)
+	state.Put("hook", hook)
+	state.Put("ui", ui)
+
+	// Build the steps
+	steps := []multistep.Step{
+		new(stepCreateSSHKey),
+		new(stepCreateInstance),
+		new(stepInstanceInfo),
+		&common.StepConnectSSH{
+			SSHAddress:     sshAddress,
+			SSHConfig:      sshConfig,
+			SSHWaitTimeout: 5 * time.Minute,
+		},
+		new(common.StepProvision),
+		new(stepCreateImage),
+	}
+
+	// Run the steps
+	if b.config.PackerDebug {
+		b.runner = &multistep.DebugRunner{
+			Steps:   steps,
+			PauseFn: common.MultistepDebugFn(ui),
+		}
+	} else {
+		b.runner = &multistep.BasicRunner{Steps: steps}
+	}
+
+	b.runner.Run(state)
+
+	// If there was an error, return that
+	if rawErr, ok := state.GetOk("error"); ok {
+		return nil, rawErr.(error)
+	}
+	if _, ok := state.GetOk("image_name"); !ok {
+		log.Println("Failed to find image_name in state. Bug?")
+		return nil, nil
+	}
+	artifact := &Artifact{
+		imageName: state.Get("image_name").(string),
+		client:    client,
+	}
+	return artifact, nil
 }
 
 func (b *Builder) Cancel() {

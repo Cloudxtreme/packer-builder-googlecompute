@@ -11,21 +11,20 @@ import (
 	"code.google.com/p/google-api-go-client/compute/v1beta16"
 )
 
-// ClientSecrets represents the parsed client secrets of a Google Compute Engine
+// clientSecrets represents the client secrets of a Google Compute Engine
 // service account.
-type ClientSecrets struct {
-	Web struct {
-		ClientEmail string `json:"client_email"`
-		ClientId    string `json:"client_id"`
-		AuthURI     string `json:"auth_uri"`
-		TokenURI    string `json:"token_uri"`
-	}
+type clientSecrets struct {
+	AuthURI     string `json:"auth_uri"`
+	ClientEmail string `json:"client_email"`
+	ClientId    string `json:"client_id"`
+	TokenURI    string `json:"token_uri"`
 }
 
 // GoogleComputeClient represents a Google Compute Engine client.
 type GoogleComputeClient struct {
 	ProjectId     string
 	Service       *compute.Service
+	Zone          string
 	clientSecrets *ClientSecrets
 }
 
@@ -43,12 +42,14 @@ type InstanceConfig struct {
 
 // New return a new GoogleComputeClient. The projectId must be the project name,
 // i.e. myproject, not the project number.
-func New(projectId string, c *ClientSecrets, pemKey []byte) (*GoogleComputeClient, error) {
-	googleComputeClient := &GoogleComputeClient{}
-	googleComputeClient.ProjectId = projectId
+func New(projectId string, zone string, c *clientSecrets, pemKey []byte) (*GoogleComputeClient, error) {
+	googleComputeClient := &GoogleComputeClient{
+		ProjectId: projectId,
+		Zone:      zone,
+	}
 	// Get the access token.
-	t := jwt.NewToken(c.Web.ClientEmail, scopes(), pemKey)
-	t.ClaimSet.Aud = c.Web.TokenURI
+	t := jwt.NewToken(c.ClientEmail, scopes(), pemKey)
+	t.ClaimSet.Aud = c.TokenURI
 	httpClient := &http.Client{}
 	token, err := t.Assert(httpClient)
 	if err != nil {
@@ -56,10 +57,10 @@ func New(projectId string, c *ClientSecrets, pemKey []byte) (*GoogleComputeClien
 	}
 	// Create the Google Compute client.
 	config := &oauth.Config{
-		ClientId: c.Web.ClientId,
+		ClientId: c.ClientId,
 		Scope:    scopes(),
-		TokenURL: c.Web.TokenURI,
-		AuthURL:  c.Web.AuthURI,
+		TokenURL: c.TokenURI,
+		AuthURL:  c.AuthURI,
 	}
 	transport := &oauth.Transport{Config: config}
 	transport.Token = token
