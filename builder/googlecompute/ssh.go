@@ -9,7 +9,7 @@ import (
 
 func sshAddress(state multistep.StateBag) (string, error) {
 	config := state.Get("config").(config)
-	ipAddress := state.Get("droplet_ip").(string)
+	ipAddress := state.Get("instance_ip").(string)
 	return fmt.Sprintf("%s:%d", ipAddress, config.SSHPort), nil
 }
 

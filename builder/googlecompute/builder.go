@@ -43,11 +43,10 @@ type config struct {
 	clientSecrets       *clientSecrets
 	privateKeyBytes     []byte
 	tpl                 *packer.ConfigTemplate
-	instanceName		string
+	instanceName        string
 }
 
 func (b *Builder) Prepare(raws ...interface{}) error {
-	// Nothing yet.
 	return nil
 }
 
@@ -89,9 +88,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	} else {
 		b.runner = &multistep.BasicRunner{Steps: steps}
 	}
-
 	b.runner.Run(state)
-
 	// If there was an error, return that
 	if rawErr, ok := state.GetOk("error"); ok {
 		return nil, rawErr.(error)
@@ -108,5 +105,5 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 }
 
 func (b *Builder) Cancel() {
-	// Nothing yet.
+	return
 }

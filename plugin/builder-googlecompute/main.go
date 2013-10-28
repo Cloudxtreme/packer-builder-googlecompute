@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mitchellh/packer/builder/googlecompute"
+	"github.com/kelseyhightower/packer-builder-googlecompute/builder/googlecompute"
 	"github.com/mitchellh/packer/packer/plugin"
 )
 
