@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"time"
 
 	"code.google.com/p/google-api-go-client/compute/v1beta16"
 	"github.com/kelseyhightower/packer-builder-googlecompute/builder/googlecompute"
@@ -84,9 +84,29 @@ func main() {
 	}
 	instanceConfig.NetworkInterfaces = networkInterfaces
 
-	operation, err := g.CreateInstance(zone.Name, instanceConfig)
+	_, err = g.CreateInstance(zone.Name, instanceConfig)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	fmt.Printf("%v\n", operation)
+
+	// Wait for instance to go up.
+	log.Print("Waiting instance to start...")
+	for {
+		status, err := g.InstanceStatus(zone.Name, "packer-instance")
+		if err != nil {
+			log.Print(err.Error())
+		}
+		if status == "RUNNING" {
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
+	time.Sleep(20 * time.Second)
+	log.Print("Deleting instance ...")
+
+	_, err = g.DeleteInstance(zone.Name, "packer-instance")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Print("Done")
 }

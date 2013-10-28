@@ -153,6 +153,30 @@ func (g *GoogleComputeClient) CreateInstance(zone string, instanceConfig *Instan
 	return operation, nil
 }
 
+// InstanceStatus returns a string representing the status of the named instance.
+// Status will be one of: "PROVISIONING", "STAGING", "RUNNING", "STOPPING",
+// "STOPPED", "TERMINATED".
+func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, error) {
+	instanceGetCall := g.Service.Instances.Get(g.ProjectId, zone, name)
+	instance, err := instanceGetCall.Do()
+	if err != nil {
+		return "", err
+	}
+	return instance.Status, nil
+}
+
+
+
+// DeleteInstance deletes the named instance.
+func (g *GoogleComputeClient) DeleteInstance(zone, name string) (*compute.Operation, error) {
+	instanceDeleteCall := g.Service.Instances.Delete(g.ProjectId, zone, name)
+	operation, err := instanceDeleteCall.Do()
+	if err != nil {
+		return nil, err
+	}
+	return operation, nil
+}
+
 // NewNetworkInterface returns a *compute.NetworkInterface.
 func NewNetworkInterface(network *compute.Network, public bool) *compute.NetworkInterface {
 	accessConfigs := make([]*compute.AccessConfig, 0)
