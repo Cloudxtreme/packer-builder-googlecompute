@@ -2,7 +2,6 @@ package googlecompute
 
 import (
 	"fmt"
-	"time"
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/packer"
 )
@@ -16,34 +15,21 @@ func (s *stepInstanceInfo) Run(state multistep.StateBag) multistep.StepAction {
 	instanceName := state.Get("instance_name").(string)
 	instanceOperationName := state.Get("instance_operation_name").(string)
 	ui.Say("Waiting for the instance to start...")
-	// Check the operation from the create instance call, then check the
-	// instance status.
-	for {
-		status, err := client.ZoneOperationStatus(c.Zone, instanceOperationName)
-		if err != nil {
-			err := fmt.Errorf("Error creating instance: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
-		}
-		if status == "DONE" {
-			break
-		}
+	err := waitForZoneOperationState("DONE", c.Zone, instanceOperationName, client, c.stateTimeout)
+	if err != nil {
+		err := fmt.Errorf("Error creating instance: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
 	}
-	for {
-		status, ip, err := client.InstanceStatus(c.Zone, instanceName)
-		if err != nil {
-			err := fmt.Errorf("Error creating instance: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
-		}
-		if status == "RUNNING" {
-			state.Put("instance_ip", ip)
-			break
-		}
-		time.Sleep(10 * time.Second)
+	err = waitForInstanceState("RUNNING", c.Zone, instanceName, client, c.stateTimeout)
+	if err != nil {
+		err := fmt.Errorf("Error creating instance: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
 	}
+	state.Put("instance_ip", "not yet")
 	return multistep.ActionContinue
 }
 

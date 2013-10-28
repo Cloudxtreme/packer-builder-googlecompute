@@ -16,19 +16,10 @@ func (*Artifact) BuilderId() string {
 
 func (a *Artifact) Destroy() error {
 	log.Printf("Destroying image: %s", a.imageName)
-	operation, err := a.client.DeleteImage(a.imageName)
+	// Ignore the operation result as we are not waiting until it completes.
+	_, err := a.client.DeleteImage(a.imageName)
 	if err != nil {
 		return err
-	}
-	log.Print("Waiting for the instance to be deleted")
-	for {
-		status, err := a.client.GlobalOperationStatus(operation.Name)
-		if err != nil {
-			return err
-		}
-		if status == "DONE" {
-			break
-		}
 	}
 	return nil
 }

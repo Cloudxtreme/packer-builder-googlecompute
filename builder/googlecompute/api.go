@@ -157,17 +157,19 @@ func (g *GoogleComputeClient) CreateInstance(zone string, instanceConfig *Instan
 // InstanceStatus returns a string representing the status of the named instance.
 // Status will be one of: "PROVISIONING", "STAGING", "RUNNING", "STOPPING",
 // "STOPPED", "TERMINATED".
-func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, string, error) {
+func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, error) {
 	instanceGetCall := g.Service.Instances.Get(g.ProjectId, zone, name)
 	instance, err := instanceGetCall.Do()
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
+	/*
 	ip := ""
 	if instance.Status == "RUNNING" {
 		ip = findNatIP(instance.NetworkInterfaces)
 	}
-	return instance.Status, ip, nil
+	*/
+	return instance.Status, nil
 }
 
 // findNatIp.
