@@ -84,13 +84,25 @@ func main() {
 	}
 	instanceConfig.NetworkInterfaces = networkInterfaces
 
-	_, err = g.CreateInstance(zone.Name, instanceConfig)
+	operation, err := g.CreateInstance(zone.Name, instanceConfig)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// Wait for instance to go up.
-	log.Print("Waiting instance to start...")
+	log.Print("Waiting for the instance to start...")
+
+	// Check the operation from the create instance call, then check the
+	// instance status.
+	for {
+		status, err := g.ZoneOperationStatus(zone.Name, operation.Name)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		if status == "DONE" {
+			break
+		}
+	}
 	for {
 		status, err := g.InstanceStatus(zone.Name, "packer-instance")
 		if err != nil {
@@ -104,9 +116,19 @@ func main() {
 	time.Sleep(20 * time.Second)
 	log.Print("Deleting instance ...")
 
-	_, err = g.DeleteInstance(zone.Name, "packer-instance")
+	operation, err = g.DeleteInstance(zone.Name, "packer-instance")
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+	log.Print("Waiting for the instance to be deleted")
+	for {
+		status, err := g.ZoneOperationStatus(zone.Name, operation.Name)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		if status == "DONE" {
+			break
+		}
 	}
 	log.Print("Done")
 }

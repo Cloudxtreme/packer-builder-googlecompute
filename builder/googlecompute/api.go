@@ -165,7 +165,33 @@ func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, error) 
 	return instance.Status, nil
 }
 
+// ZoneOperationStatus.
+func (g *GoogleComputeClient) ZoneOperationStatus(zone, name string) (string, error) {
+	zoneOperationsGetCall := g.Service.ZoneOperations.Get(g.ProjectId, zone, name)
+	operation, err := zoneOperationsGetCall.Do()
+	if err != nil {
+		return "", err
+	}
+	if operation.Status == "DONE" {
+		err = processOperationStatus(operation)
+		if err != nil {
+			return operation.Status, err
+		}
+	}
+	return operation.Status, nil
+}
 
+// processOperationStatus.
+func processOperationStatus(o *compute.Operation) error {
+	if o.Error != nil {
+		messages := make([]string, len(o.Error.Errors))
+		for _, e := range o.Error.Errors {
+			messages = append(messages, e.Message)
+		}
+		return errors.New(strings.Join(messages, "\n"))
+	}
+	return nil
+}
 
 // DeleteInstance deletes the named instance.
 func (g *GoogleComputeClient) DeleteInstance(zone, name string) (*compute.Operation, error) {
