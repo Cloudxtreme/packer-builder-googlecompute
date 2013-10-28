@@ -15,17 +15,15 @@ func sshAddress(state multistep.StateBag) (string, error) {
 
 func sshConfig(state multistep.StateBag) (*gossh.ClientConfig, error) {
 	config := state.Get("config").(config)
-	privateKey := state.Get("privateKey").(string)
+	privateKey := state.Get("ssh_private_key").(string)
 
 	keyring := new(ssh.SimpleKeychain)
 	if err := keyring.AddPEMKey(privateKey); err != nil {
 		return nil, fmt.Errorf("Error setting up SSH config: %s", err)
 	}
-
-	return &gossh.ClientConfig{
+	sshConfig := &gossh.ClientConfig{
 		User: config.SSHUsername,
-		Auth: []gossh.ClientAuth{
-			gossh.ClientAuthKeyring(keyring),
-		},
-	}, nil
+		Auth: []gossh.ClientAuth{gossh.ClientAuthKeyring(keyring)},
+	}
+	return sshConfig, nil
 }

@@ -64,6 +64,10 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		networkInterface,
 	}
 	instanceConfig.NetworkInterfaces = networkInterfaces
+	// Add the metadata, which also setups up the ssh key.
+	metadata := make(map[string]string)
+	metadata["sshKeys"] = state.Get("ssh_public_key").(string)
+	instanceConfig.Metadata = MapToMetadata(metadata)
 	// Create the instance based on configuration
 	operation, err := client.CreateInstance(zone.Name, instanceConfig)
 	if err != nil {
