@@ -5,7 +5,6 @@ import (
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common/uuid"
 	"github.com/mitchellh/packer/packer"
-	"time"
 
 	"code.google.com/p/google-api-go-client/compute/v1beta16"
 )
@@ -18,13 +17,9 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 	client := state.Get("client").(*GoogleComputeClient)
 	ui := state.Get("ui").(packer.Ui)
 	c := state.Get("config").(config)
-
 	ui.Say("Creating instance...")
-
-	// Some random instance name as it's temporary
 	name := fmt.Sprintf("packer-%s", uuid.TimeOrderedUUID())
-
-	// Build up the instance config. We need fully-qualified urls for the image and network.
+	// Build up the instance config.
 	instanceConfig := &InstanceConfig{
 		Description: "New instance created by Packer",
 		Name:        name,
@@ -37,8 +32,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-
-	// Get the image
+	// Set the source image. Must be a fully-qualified URL.
 	image, err := client.GetImage(c.SourceImage)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
@@ -47,7 +41,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		return multistep.ActionHalt
 	}
 	instanceConfig.Image = image.SelfLink
-
+	// Set the machineType. Must be a fully-qualified URL.
 	machineType, err := client.GetMachineType(c.MachineType, zone.Name)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
@@ -57,7 +51,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 
 	}
 	instanceConfig.MachineType = machineType.SelfLink
-
+	// Set up the Network Interface.
 	network, err := client.GetNetwork(c.Network)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
@@ -70,7 +64,6 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		networkInterface,
 	}
 	instanceConfig.NetworkInterfaces = networkInterfaces
-
 	// Create the instance based on configuration
 	operation, err := client.CreateInstance(zone.Name, instanceConfig)
 	if err != nil {
@@ -79,41 +72,10 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-
-	// Wait for instance to go up.
-	ui.Say("Waiting for the instance to start...")
-
-	// Check the operation from the create instance call, then check the
-	// instance status.
-	for {
-		status, err := client.ZoneOperationStatus(zone.Name, operation.Name)
-		if err != nil {
-			err := fmt.Errorf("Error creating instance: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
-		}
-		if status == "DONE" {
-			break
-		}
-	}
-	for {
-		status, err := client.InstanceStatus(zone.Name, name)
-		if err != nil {
-			err := fmt.Errorf("Error creating instance: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
-		}
-		if status == "RUNNING" {
-			break
-		}
-		time.Sleep(10 * time.Second)
-	}
-	// We use this in cleanup
-	s.instanceName = name
-	// Store the image name for later
+	// Update the state.
 	state.Put("instance_name", name)
+	state.Put("instance_operation_name", operation.Name)
+	s.instanceName = name
 	return multistep.ActionContinue
 }
 
@@ -124,10 +86,8 @@ func (s *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	client := state.Get("client").(*GoogleComputeClient)
 	ui := state.Get("ui").(packer.Ui)
 	c := state.Get("config").(config)
-
 	// Destroy the instance we just created
 	ui.Say("Destroying instance...")
-
 	operation, err := client.DeleteInstance(c.Zone, s.instanceName)
 	if err != nil {
 		ui.Error(fmt.Sprintf("Error destroying instance. Please destroy it manually: %v", s.instanceName))
