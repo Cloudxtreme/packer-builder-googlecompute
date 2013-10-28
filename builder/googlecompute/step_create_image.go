@@ -9,6 +9,7 @@ type stepCreateImage struct {
 }
 
 func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
+	state.Put("image_name", "random-image")
 	return multistep.ActionContinue
 }
 
