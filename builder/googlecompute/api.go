@@ -25,7 +25,7 @@ type GoogleComputeClient struct {
 	ProjectId     string
 	Service       *compute.Service
 	Zone          string
-	clientSecrets *ClientSecrets
+	clientSecrets *clientSecrets
 }
 
 // InstanceConfig represents a Google Compute Engine instance configuration.

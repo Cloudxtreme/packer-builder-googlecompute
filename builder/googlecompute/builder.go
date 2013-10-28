@@ -3,13 +3,10 @@
 package googlecompute
 
 import (
-	"errors"
-	"fmt"
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common"
 	"github.com/mitchellh/packer/packer"
 	"log"
-	"os"
 	"time"
 )
 
@@ -43,18 +40,19 @@ type config struct {
 	Zone                string            `mapstructure:"zone"`
 	sshTimeout          time.Duration
 	stateTimeout        time.Duration
-	clientSecrets       *ClientSecrets
+	clientSecrets       *clientSecrets
 	privateKeyBytes     []byte
 	tpl                 *packer.ConfigTemplate
 }
 
 func (b *Builder) Prepare(raws ...interface{}) error {
 	// Nothing yet.
+	return nil
 }
 
 func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packer.Artifact, error) {
 	// Initialize the Google Compute Engine api.
-	client, err := googlecompute.New(b.config.ProjectId, b.config.Zone, b.config.clientSecrets, b.config.privateKeyBytes)
+	client, err := New(b.config.ProjectId, b.config.Zone, b.config.clientSecrets, b.config.privateKeyBytes)
 	if err != nil {
 		log.Println("Failed to create the Google Compute Engine client.")
 		return nil, err
