@@ -43,6 +43,7 @@ type config struct {
 	clientSecrets       *clientSecrets
 	privateKeyBytes     []byte
 	tpl                 *packer.ConfigTemplate
+	instanceName		string
 }
 
 func (b *Builder) Prepare(raws ...interface{}) error {

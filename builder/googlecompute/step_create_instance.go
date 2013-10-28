@@ -5,17 +5,19 @@ import (
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common/uuid"
 	"github.com/mitchellh/packer/packer"
+	"time"
+
+	"code.google.com/p/google-api-go-client/compute/v1beta16"
 )
 
 type stepCreateInstance struct {
-	instanceName uint
+	instanceName string
 }
 
 func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*GoogleComputeClient)
 	ui := state.Get("ui").(packer.Ui)
 	c := state.Get("config").(config)
-	sshPublicKey := state.Get("ssh_public_key").(string)
 
 	ui.Say("Creating instance...")
 
@@ -28,29 +30,42 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		Name:        name,
 	}
 	// Validate the zone.
-	zone, err := g.GetZone(zoneName)
+	zone, err := client.GetZone(c.Zone)
 	if err != nil {
-		log.Fatal(err.Error())
+		err := fmt.Errorf("Error creating instance: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
 	}
 
 	// Get the image
-	image, err := g.GetImage(imageName)
+	image, err := client.GetImage(c.SourceImage)
 	if err != nil {
-		log.Fatal(err.Error())
+		err := fmt.Errorf("Error creating instance: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
 	}
 	instanceConfig.Image = image.SelfLink
 
-	machineType, err := g.GetMachineType(machineTypeName, zone.Name)
+	machineType, err := client.GetMachineType(c.MachineType, zone.Name)
 	if err != nil {
-		log.Fatal(err.Error())
+		err := fmt.Errorf("Error creating instance: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+
 	}
 	instanceConfig.MachineType = machineType.SelfLink
 
-	network, err := g.GetNetwork(networkName)
+	network, err := client.GetNetwork(c.Network)
 	if err != nil {
-		log.Fatal(err.Error())
+		err := fmt.Errorf("Error creating instance: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
 	}
-	networkInterface := googlecompute.NewNetworkInterface(network, true)
+	networkInterface := NewNetworkInterface(network, true)
 	networkInterfaces := []*compute.NetworkInterface{
 		networkInterface,
 	}
@@ -87,8 +102,8 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		if err != nil {
 			err := fmt.Errorf("Error creating instance: %s", err)
 			state.Put("error", err)
-			 ui.Error(err.Error())
-			 return multistep.ActionHalt
+			ui.Error(err.Error())
+			return multistep.ActionHalt
 		}
 		if status == "RUNNING" {
 			break
@@ -96,14 +111,14 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		time.Sleep(10 * time.Second)
 	}
 	// We use this in cleanup
-	s.imageName = name
+	s.instanceName = name
 	// Store the image name for later
-	state.Put("image_name", imageName)
+	state.Put("instance_name", name)
 	return multistep.ActionContinue
 }
 
 func (s *stepCreateInstance) Cleanup(state multistep.StateBag) {
-	if s.imageName == "" {
+	if s.instanceName == "" {
 		return
 	}
 	client := state.Get("client").(*GoogleComputeClient)
@@ -113,15 +128,15 @@ func (s *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	// Destroy the instance we just created
 	ui.Say("Destroying instance...")
 
-	operation, err = client.DeleteInstance(zone.Name, s.imageName)
+	operation, err := client.DeleteInstance(c.Zone, s.instanceName)
 	if err != nil {
-		ui.Error(fmt.Sprintf("Error destroying instance. Please destroy it manually: %v", s.imageName))
+		ui.Error(fmt.Sprintf("Error destroying instance. Please destroy it manually: %v", s.instanceName))
 	}
 	ui.Say("Waiting for the instance to be deleted...")
 	for {
-		status, err := g.ZoneOperationStatus(zone.Name, operation.Name)
+		status, err := client.ZoneOperationStatus(c.Zone, operation.Name)
 		if err != nil {
-			ui.Error(fmt.Sprintf("Error destroying instance. Please destroy it manually: %v", s.imageName))
+			ui.Error(fmt.Sprintf("Error destroying instance. Please destroy it manually: %v", s.instanceName))
 		}
 		if status == "DONE" {
 			break
