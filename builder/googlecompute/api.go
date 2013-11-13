@@ -40,8 +40,8 @@ func New(projectId string, zone string, c *clientSecrets, pemKey []byte) (*Googl
 		Zone:      zone,
 	}
 	// Get the access token.
-	t := jwt.NewToken(c.ClientEmail, scopes(), pemKey)
-	t.ClaimSet.Aud = c.TokenURI
+	t := jwt.NewToken(c.Web.ClientEmail, scopes(), pemKey)
+	t.ClaimSet.Aud = c.Web.TokenURI
 	httpClient := &http.Client{}
 	token, err := t.Assert(httpClient)
 	if err != nil {
@@ -49,10 +49,10 @@ func New(projectId string, zone string, c *clientSecrets, pemKey []byte) (*Googl
 	}
 	// Create the Google Compute client.
 	config := &oauth.Config{
-		ClientId: c.ClientId,
+		ClientId: c.Web.ClientId,
 		Scope:    scopes(),
-		TokenURL: c.TokenURI,
-		AuthURL:  c.AuthURI,
+		TokenURL: c.Web.TokenURI,
+		AuthURL:  c.Web.AuthURI,
 	}
 	transport := &oauth.Transport{Config: config}
 	transport.Token = token

@@ -5,6 +5,7 @@ package googlecompute
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"time"
 
@@ -129,7 +130,17 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 		errs = packer.MultiErrorAppend(
 			errs, fmt.Errorf("Failed parsing client secrets file: %s", err))
 	}
+	b.config.clientSecrets = cs
 	// Validate client secrets.
+
+	// Read in the private key
+	privateKeyBytes, err := ioutil.ReadFile("gce-service.pem")
+	if err != nil {
+		errs = packer.MultiErrorAppend(
+			errs, fmt.Errorf("Failed parsing client secrets file: %s", err))
+
+	}
+	b.config.privateKeyBytes = privateKeyBytes
 	if errs != nil && len(errs.Errors) > 0 {
 		return errs
 	}

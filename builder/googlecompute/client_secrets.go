@@ -17,8 +17,8 @@ type clientSecrets struct {
 }
 
 // loadClientSecrets
-func loadClientSecrets(path string) (*ClientSecerts, error) {
-	var cs clientSecrets
+func loadClientSecrets(path string) (*clientSecrets, error) {
+	var cs *clientSecrets
 	secretBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
