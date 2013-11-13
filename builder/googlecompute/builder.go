@@ -23,9 +23,7 @@ type Builder struct {
 
 type config struct {
 	common.PackerConfig `mapstructure:",squash"`
-	AuthURI             string            `mapstructure:"auth_uri"`
-	ClientEmail         string            `mapstructure:"client_email"`
-	ClientId            string            `mapstructure:"client_id"`
+	ClientSecretsPath   string            `mapstructure:"client_secrets_path"`
 	ImageName           string            `mapstructure:"image_name"`
 	ImageDescription    string            `mapstructure:"image_description"`
 	MachineType         string            `mapstructure:"machine_type"`
@@ -39,14 +37,14 @@ type config struct {
 	RawSSHTimeout       string            `mapstructure:"ssh_timeout"`
 	RawStateTimeout     string            `mapstructure:"state_timeout"`
 	Tags                []string          `mapstructure:"tags"`
-	TokenURI            string            `mapstructure:"token_uri"`
 	Zone                string            `mapstructure:"zone"`
-	sshTimeout          time.Duration
-	stateTimeout        time.Duration
-	clientSecrets       *clientSecrets
-	privateKeyBytes     []byte
-	tpl                 *packer.ConfigTemplate
-	instanceName        string
+	// Private configuration settings not seen by the user.
+	clientSecrets   *clientSecrets
+	instanceName    string
+	privateKeyBytes []byte
+	sshTimeout      time.Duration
+	stateTimeout    time.Duration
+	tpl             *packer.ConfigTemplate
 }
 
 func (b *Builder) Prepare(raws ...interface{}) error {
@@ -85,19 +83,9 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 	}
 
 	// Still need to process user vars and template strings.
-
-	// Required configurations that will display errors if not set.
-	if b.config.AuthURI == "" {
+	if b.config.ClientSecretsPath == "" {
 		errs = packer.MultiErrorAppend(
-			errs, errors.New("a auth_uri must be specified"))
-	}
-	if b.config.ClientEmail == "" {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("a client_email must be specified"))
-	}
-	if b.config.ClientId == "" {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("a client_id must be specified"))
+			errs, errors.New("a client_secrets_path must be specified"))
 	}
 	if b.config.PrivateKeyPath == "" {
 		errs = packer.MultiErrorAppend(
@@ -117,10 +105,6 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("a source_image must be specified"))
 	}
-	if b.config.TokenURI == "" {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("a token_uri must be specified"))
-	}
 	if b.config.Zone == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("a zone must be specified"))
@@ -139,7 +123,13 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 			errs, fmt.Errorf("Failed parsing state_timeout: %s", err))
 	}
 	b.config.stateTimeout = stateTimeout
-
+	// load the client secrets.
+	cs, err := loadClientSecrets(b.config.ClientSecretsPath)
+	if err != nil {
+		errs = packer.MultiErrorAppend(
+			errs, fmt.Errorf("Failed parsing client secrets file: %s", err))
+	}
+	// Validate client secrets.
 	if errs != nil && len(errs.Errors) > 0 {
 		return errs
 	}

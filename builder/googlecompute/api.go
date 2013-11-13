@@ -11,14 +11,6 @@ import (
 	"code.google.com/p/google-api-go-client/compute/v1beta16"
 )
 
-// clientSecrets represents the client secrets of a Google Compute Engine
-// service account.
-type clientSecrets struct {
-	AuthURI     string `json:"auth_uri"`
-	ClientEmail string `json:"client_email"`
-	ClientId    string `json:"client_id"`
-	TokenURI    string `json:"token_uri"`
-}
 
 // GoogleComputeClient represents a Google Compute Engine client.
 type GoogleComputeClient struct {
