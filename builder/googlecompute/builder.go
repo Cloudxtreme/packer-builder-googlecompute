@@ -3,11 +3,14 @@
 package googlecompute
 
 import (
+	"errors"
+	"fmt"
+	"log"
+	"time"
+
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common"
 	"github.com/mitchellh/packer/packer"
-	"log"
-	"time"
 )
 
 // The unique ID for this builder
@@ -47,6 +50,99 @@ type config struct {
 }
 
 func (b *Builder) Prepare(raws ...interface{}) error {
+	// Load the packer config.
+	md, err := common.DecodeConfig(&b.config, raws...)
+	if err != nil {
+		return err
+	}
+	b.config.tpl, err = packer.NewConfigTemplate()
+	if err != nil {
+		return err
+	}
+	b.config.tpl.UserVars = b.config.PackerUserVars
+
+	errs := common.CheckUnusedConfig(md)
+	// Collect errors if any.
+	if err := common.CheckUnusedConfig(md); err != nil {
+		return err
+	}
+	// Do we need to collect anything from the environment?
+
+	if b.config.ImageName == "" {
+		// Default to packer-{{ unix timestamp (utc) }}
+		b.config.ImageName = "packer-{{timestamp}}"
+	}
+	if b.config.MachineType == "" {
+		b.config.MachineType = "default image type"
+	}
+	if b.config.SSHUsername == "" {
+		b.config.SSHUsername = "root"
+	}
+	// Default Instance Size?
+	// Set the default SSH port
+	if b.config.SSHPort == 0 {
+		b.config.SSHPort = 22
+	}
+
+	// Still need to process user vars and template strings.
+
+	// Required configurations that will display errors if not set.
+	if b.config.AuthURI == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a auth_uri must be specified"))
+	}
+	if b.config.ClientEmail == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a client_email must be specified"))
+	}
+	if b.config.ClientId == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a client_id must be specified"))
+	}
+	if b.config.PrivateKeyPath == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a private_key_path must be specified"))
+	}
+	if b.config.ProjectId == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a project_id must be specified"))
+	}
+	if b.config.RawSSHTimeout == "" {
+		b.config.RawSSHTimeout = "1m"
+	}
+	if b.config.RawStateTimeout == "" {
+		b.config.RawStateTimeout = "6m"
+	}
+	if b.config.SourceImage == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a source_image must be specified"))
+	}
+	if b.config.TokenURI == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a token_uri must be specified"))
+	}
+	if b.config.Zone == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a zone must be specified"))
+	}
+	// Process timeout settings.
+	sshTimeout, err := time.ParseDuration(b.config.RawSSHTimeout)
+	if err != nil {
+		errs = packer.MultiErrorAppend(
+			errs, fmt.Errorf("Failed parsing ssh_timeout: %s", err))
+	}
+	b.config.sshTimeout = sshTimeout
+	// Set the state timeout.
+	stateTimeout, err := time.ParseDuration(b.config.RawStateTimeout)
+	if err != nil {
+		errs = packer.MultiErrorAppend(
+			errs, fmt.Errorf("Failed parsing state_timeout: %s", err))
+	}
+	b.config.stateTimeout = stateTimeout
+
+	if errs != nil && len(errs.Errors) > 0 {
+		return errs
+	}
 	return nil
 }
 
@@ -57,14 +153,12 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		log.Println("Failed to create the Google Compute Engine client.")
 		return nil, err
 	}
-
 	// Set up the state.
 	state := new(multistep.BasicStateBag)
 	state.Put("config", b.config)
 	state.Put("client", client)
 	state.Put("hook", hook)
 	state.Put("ui", ui)
-
 	// Build the steps
 	steps := []multistep.Step{
 		new(stepCreateSSHKey),
@@ -78,7 +172,6 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		new(common.StepProvision),
 		new(stepCreateImage),
 	}
-
 	// Run the steps
 	if b.config.PackerDebug {
 		b.runner = &multistep.DebugRunner{
