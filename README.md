@@ -35,11 +35,13 @@ Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) 
 
 ```JSON
 {
-  "type": "googlecompute",
-  "client_secrets_path": "/path/client_secrets.json"
-  "private_key_path": "/path/private.key",
-  "project_id": "my-project"
-  "source_image": "debian-7-wheezy-v20130926",
-  "zone": "us-central1-a"
+  "builders": [{
+    "type": "googlecompute",
+    "client_secrets_path": "/path/client_secrets.json",
+    "private_key_path": "/path/private.key",
+    "project_id": "my-project",
+    "source_image": "debian-7-wheezy-v20130926",
+    "zone": "us-central1-a"
+  }]
 }
 ```
