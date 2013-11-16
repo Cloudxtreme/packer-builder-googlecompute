@@ -11,7 +11,6 @@ import (
 	"code.google.com/p/google-api-go-client/compute/v1beta16"
 )
 
-
 // GoogleComputeClient represents a Google Compute Engine client.
 type GoogleComputeClient struct {
 	ProjectId     string
@@ -29,6 +28,7 @@ type InstanceConfig struct {
 	Metadata          *compute.Metadata
 	Name              string
 	NetworkInterfaces []*compute.NetworkInterface
+	ServiceAccounts   []*compute.ServiceAccount
 	Tags              *compute.Tags
 }
 
@@ -257,6 +257,18 @@ func NewNetworkInterface(network *compute.Network, public bool) *compute.Network
 	return &compute.NetworkInterface{
 		AccessConfigs: accessConfigs,
 		Network:       network.SelfLink,
+	}
+}
+
+// NewServiceAccount returns a *compute.ServiceAccount.
+func NewServiceAccount() *compute.ServiceAccount {
+	return &compute.ServiceAccount{
+		Email: "default",
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/compute",
+			"https://www.googleapis.com/auth/devstorage.full_control",
+		},
 	}
 }
 
