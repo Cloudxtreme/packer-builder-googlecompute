@@ -66,6 +66,9 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 		return err
 	}
 	// Set defaults.
+	if b.config.Network == "" {
+		b.config.Network = "default"
+	}
 	if b.config.ImageName == "" {
 		// Default to packer-{{ unix timestamp (utc) }}
 		b.config.ImageName = "packer-{{timestamp}}"
