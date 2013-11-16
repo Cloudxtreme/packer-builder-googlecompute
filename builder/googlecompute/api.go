@@ -136,6 +136,7 @@ func (g *GoogleComputeClient) CreateInstance(zone string, instanceConfig *Instan
 		Metadata:          instanceConfig.Metadata,
 		Name:              instanceConfig.Name,
 		NetworkInterfaces: instanceConfig.NetworkInterfaces,
+		ServiceAccounts:   instanceConfig.ServiceAccounts,
 		Tags:              instanceConfig.Tags,
 	}
 	instanceInsertCall := g.Service.Instances.Insert(g.ProjectId, zone, instance)
@@ -261,9 +262,9 @@ func NewNetworkInterface(network *compute.Network, public bool) *compute.Network
 }
 
 // NewServiceAccount returns a *compute.ServiceAccount.
-func NewServiceAccount() *compute.ServiceAccount {
+func NewServiceAccount(email string) *compute.ServiceAccount {
 	return &compute.ServiceAccount{
-		Email: "default",
+		Email: email,
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/compute",
@@ -294,10 +295,7 @@ func SliceToTags(tags []string) *compute.Tags {
 func scopes() string {
 	s := []string{
 		"https://www.googleapis.com/auth/compute",
-		"https://www.googleapis.com/auth/compute.readonly",
 		"https://www.googleapis.com/auth/devstorage.full_control",
-		"https://www.googleapis.com/auth/devstorage.read_write",
-		"https://www.googleapis.com/auth/devstorage.write_only",
 	}
 	return strings.Join(s, " ")
 }

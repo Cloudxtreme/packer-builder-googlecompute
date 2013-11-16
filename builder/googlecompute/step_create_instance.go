@@ -69,6 +69,13 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 	sshPublicKey := state.Get("ssh_public_key").(string)
 	metadata["sshKeys"] = fmt.Sprintf("%s:%s", c.SSHUsername, sshPublicKey)
 	instanceConfig.Metadata = MapToMetadata(metadata)
+	// Add the default service so we can create an image of the machine and
+	// upload it to cloud storage.
+	defaultServiceAccount := NewServiceAccount("default")
+	serviceAccounts := []*compute.ServiceAccount{
+		defaultServiceAccount,
+	}
+	instanceConfig.ServiceAccounts = serviceAccounts
 	// Create the instance based on configuration
 	operation, err := client.CreateInstance(zone.Name, instanceConfig)
 	if err != nil {
@@ -77,14 +84,6 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	// Add the default service so we can create an image of the machine and
-	// upload it to cloud storage.
-	defaultServiceAccount := NewServiceAccount()
-	serviceAccounts := []*compute.ServiceAccount{
-		defaultServiceAccount,
-	}
-	instanceConfig.ServiceAccounts = serviceAccounts
-
 	ui.Say("Waiting for the instance to be created...")
 	err = waitForZoneOperationState("DONE", c.Zone, operation.Name, client, c.stateTimeout)
 	if err != nil {
