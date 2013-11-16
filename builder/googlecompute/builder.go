@@ -65,42 +65,41 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 	if err := common.CheckUnusedConfig(md); err != nil {
 		return err
 	}
-	// Do we need to collect anything from the environment?
-
+	// Set defaults.
 	if b.config.ImageName == "" {
 		// Default to packer-{{ unix timestamp (utc) }}
 		b.config.ImageName = "packer-{{timestamp}}"
 	}
 	if b.config.MachineType == "" {
-		b.config.MachineType = "default image type"
+		b.config.MachineType = "f1-micro"
+	}
+	if b.config.RawSSHTimeout == "" {
+		b.config.RawSSHTimeout = "5m"
+	}
+	if b.config.RawStateTimeout == "" {
+		b.config.RawStateTimeout = "5m"
 	}
 	if b.config.SSHUsername == "" {
 		b.config.SSHUsername = "root"
 	}
-	// Default Instance Size?
-	// Set the default SSH port
 	if b.config.SSHPort == 0 {
 		b.config.SSHPort = 22
 	}
-
-	// Still need to process user vars and template strings.
+	// Process required parameters.
+	// client_secrets_path is required.
 	if b.config.ClientSecretsPath == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("a client_secrets_path must be specified"))
 	}
+	// private_key_path is required.
 	if b.config.PrivateKeyPath == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("a private_key_path must be specified"))
 	}
+	// project_id is required.
 	if b.config.ProjectId == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("a project_id must be specified"))
-	}
-	if b.config.RawSSHTimeout == "" {
-		b.config.RawSSHTimeout = "1m"
-	}
-	if b.config.RawStateTimeout == "" {
-		b.config.RawStateTimeout = "6m"
 	}
 	if b.config.SourceImage == "" {
 		errs = packer.MultiErrorAppend(
@@ -124,23 +123,22 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 			errs, fmt.Errorf("Failed parsing state_timeout: %s", err))
 	}
 	b.config.stateTimeout = stateTimeout
-	// load the client secrets.
+	// Load the client secrets file.
 	cs, err := loadClientSecrets(b.config.ClientSecretsPath)
 	if err != nil {
 		errs = packer.MultiErrorAppend(
 			errs, fmt.Errorf("Failed parsing client secrets file: %s", err))
 	}
 	b.config.clientSecrets = cs
-	// Validate client secrets.
-
-	// Read in the private key
-	privateKeyBytes, err := ioutil.ReadFile("gce-service.pem")
+	// Load the private key.
+	privateKeyBytes, err := ioutil.ReadFile(b.config.PrivateKeyPath)
 	if err != nil {
 		errs = packer.MultiErrorAppend(
 			errs, fmt.Errorf("Failed parsing client secrets file: %s", err))
 
 	}
 	b.config.privateKeyBytes = privateKeyBytes
+	// Check for any errors.
 	if errs != nil && len(errs.Errors) > 0 {
 		return errs
 	}

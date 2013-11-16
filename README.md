@@ -35,10 +35,9 @@ Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) 
 {
   "type": "googlecompute",
   "client_secrets_path": "/path/client_secrets.json"
-  "machine_type": "n1-standard-1-d",
   "private_key_path": "/path/private.key",
+  "project_id": "my-project"
   "source_image": "debian-7-wheezy-v20130926",
-  "ssh_username": "root",
-  "ssh_timeout": "5m"
+  "zone": "us-central1-a"
 }
 ```
