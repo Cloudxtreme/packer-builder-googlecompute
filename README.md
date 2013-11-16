@@ -34,14 +34,11 @@ Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) 
 ```JSON
 {
   "type": "googlecompute",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "client_secrets_path": "/path/client_secrets.json"
   "machine_type": "n1-standard-1-d",
-  "client_email": "XXXXXXXXXXXXXXX@developer.gserviceaccount.com",
-  "client_id": "XXXXXXXXXXXXXXX.apps.googleusercontent.com",
-  "private_key_path": "/path/to/service_account/privatekey_pem_file",
+  "private_key_path": "/path/private.key",
   "source_image": "debian-7-wheezy-v20130926",
-  "ssh_username": "",
+  "ssh_username": "root",
   "ssh_timeout": "5m"
 }
 ```
