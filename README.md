@@ -21,6 +21,8 @@ plugin/builder-googlecompute/main.go
 
 Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) to pick up the new builder:
 
+`~/.packerconfig`
+
 ```
 {
   "builders": {
