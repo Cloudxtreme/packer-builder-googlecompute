@@ -24,6 +24,7 @@ type Builder struct {
 
 type config struct {
 	common.PackerConfig `mapstructure:",squash"`
+	BucketName          string            `mapstructure:"bucket_name"`
 	ClientSecretsPath   string            `mapstructure:"client_secrets_path"`
 	ImageName           string            `mapstructure:"image_name"`
 	ImageDescription    string            `mapstructure:"image_description"`
@@ -88,7 +89,24 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 	if b.config.SSHPort == 0 {
 		b.config.SSHPort = 22
 	}
+	// Process Templates
+	templates := map[string]*string{
+		"image_name": &b.config.ImageName,
+	}
+	for n, ptr := range templates {
+		var err error
+		*ptr, err = b.config.tpl.Process(*ptr, nil)
+		if err != nil {
+			errs = packer.MultiErrorAppend(
+				errs, fmt.Errorf("Error processing %s: %s", n, err))
+		}
+	}
 	// Process required parameters.
+	// bucket_name is required.
+	if b.config.BucketName == "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("a bucket_name must be specified"))
+	}
 	// client_secrets_path is required.
 	if b.config.ClientSecretsPath == "" {
 		errs = packer.MultiErrorAppend(
