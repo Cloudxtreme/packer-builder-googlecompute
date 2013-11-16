@@ -74,7 +74,7 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 		b.config.ImageName = "packer-{{timestamp}}"
 	}
 	if b.config.MachineType == "" {
-		b.config.MachineType = "f1-micro"
+		b.config.MachineType = "n1-standard-1"
 	}
 	if b.config.RawSSHTimeout == "" {
 		b.config.RawSSHTimeout = "5m"
