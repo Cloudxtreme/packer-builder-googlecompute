@@ -16,7 +16,7 @@ Next, clone this repository into `$GOPATH/src/github.com/kelseyhightower/packer-
 ```
 cd $GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute
 go build -o /usr/local/packer/packer-builder-googlecompute \
-plugin/packer-builder-googlecompute/main.go
+plugin/builder-googlecompute/main.go
 ```
 
 Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) to pick up the new builder:
