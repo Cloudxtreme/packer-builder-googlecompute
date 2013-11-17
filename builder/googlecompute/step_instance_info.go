@@ -16,18 +16,20 @@ type stepInstanceInfo struct{}
 
 // Run executes the Packer build step that gathers GCE instance info.
 func (s *stepInstanceInfo) Run(state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client").(*GoogleComputeClient)
-	ui := state.Get("ui").(packer.Ui)
-	c := state.Get("config").(config)
+	var (
+		client = state.Get("client").(*GoogleComputeClient)
+		config = state.Get("config").(config)
+		ui     = state.Get("ui").(packer.Ui)
+	)
 	instanceName := state.Get("instance_name").(string)
-	err := waitForInstanceState("RUNNING", c.Zone, instanceName, client, c.stateTimeout)
+	err := waitForInstanceState("RUNNING", config.Zone, instanceName, client, config.stateTimeout)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	ip, err := client.GetNatIP(c.Zone, instanceName)
+	ip, err := client.GetNatIP(config.Zone, instanceName)
 	if err != nil {
 		err := fmt.Errorf("Error retrieving instance nat ip address: %s", err)
 		state.Put("error", err)
@@ -38,6 +40,4 @@ func (s *stepInstanceInfo) Run(state multistep.StateBag) multistep.StepAction {
 	return multistep.ActionContinue
 }
 
-func (s *stepInstanceInfo) Cleanup(state multistep.StateBag) {
-	// Nothing to cleanup.
-}
+func (s *stepInstanceInfo) Cleanup(state multistep.StateBag) {}

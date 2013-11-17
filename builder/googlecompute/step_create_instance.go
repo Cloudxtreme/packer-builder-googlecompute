@@ -20,9 +20,11 @@ type stepCreateInstance struct {
 
 // Run executes the Packer build step that creates a GCE instance.
 func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client").(*GoogleComputeClient)
-	ui := state.Get("ui").(packer.Ui)
-	c := state.Get("config").(config)
+	var (
+		client = state.Get("client").(*GoogleComputeClient)
+		config = state.Get("config").(config)
+		ui     = state.Get("ui").(packer.Ui)
+	)
 	ui.Say("Creating instance...")
 	name := fmt.Sprintf("packer-%s", uuid.TimeOrderedUUID())
 	// Build up the instance config.
@@ -31,7 +33,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		Name:        name,
 	}
 	// Validate the zone.
-	zone, err := client.GetZone(c.Zone)
+	zone, err := client.GetZone(config.Zone)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
 		state.Put("error", err)
@@ -39,7 +41,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		return multistep.ActionHalt
 	}
 	// Set the source image. Must be a fully-qualified URL.
-	image, err := client.GetImage(c.SourceImage)
+	image, err := client.GetImage(config.SourceImage)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
 		state.Put("error", err)
@@ -48,7 +50,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 	}
 	instanceConfig.Image = image.SelfLink
 	// Set the machineType. Must be a fully-qualified URL.
-	machineType, err := client.GetMachineType(c.MachineType, zone.Name)
+	machineType, err := client.GetMachineType(config.MachineType, zone.Name)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
 		state.Put("error", err)
@@ -58,7 +60,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 	}
 	instanceConfig.MachineType = machineType.SelfLink
 	// Set up the Network Interface.
-	network, err := client.GetNetwork(c.Network)
+	network, err := client.GetNetwork(config.Network)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
 		state.Put("error", err)
@@ -73,7 +75,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 	// Add the metadata, which also setups up the ssh key.
 	metadata := make(map[string]string)
 	sshPublicKey := state.Get("ssh_public_key").(string)
-	metadata["sshKeys"] = fmt.Sprintf("%s:%s", c.SSHUsername, sshPublicKey)
+	metadata["sshKeys"] = fmt.Sprintf("%s:%s", config.SSHUsername, sshPublicKey)
 	instanceConfig.Metadata = MapToMetadata(metadata)
 	// Add the default service so we can create an image of the machine and
 	// upload it to cloud storage.
@@ -91,7 +93,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 		return multistep.ActionHalt
 	}
 	ui.Say("Waiting for the instance to be created...")
-	err = waitForZoneOperationState("DONE", c.Zone, operation.Name, client, c.stateTimeout)
+	err = waitForZoneOperationState("DONE", config.Zone, operation.Name, client, config.stateTimeout)
 	if err != nil {
 		err := fmt.Errorf("Error creating instance: %s", err)
 		state.Put("error", err)
@@ -105,21 +107,23 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 }
 
 func (s *stepCreateInstance) Cleanup(state multistep.StateBag) {
+	var (
+		client = state.Get("client").(*GoogleComputeClient)
+		config = state.Get("config").(config)
+		ui     = state.Get("ui").(packer.Ui)
+	)
 	if s.instanceName == "" {
 		return
 	}
-	client := state.Get("client").(*GoogleComputeClient)
-	ui := state.Get("ui").(packer.Ui)
-	c := state.Get("config").(config)
 	// Destroy the instance we just created
 	ui.Say("Destroying instance...")
-	operation, err := client.DeleteInstance(c.Zone, s.instanceName)
+	operation, err := client.DeleteInstance(config.Zone, s.instanceName)
 	if err != nil {
 		ui.Error(fmt.Sprintf("Error destroying instance. Please destroy it manually: %v", s.instanceName))
 	}
 	ui.Say("Waiting for the instance to be deleted...")
 	for {
-		status, err := client.ZoneOperationStatus(c.Zone, operation.Name)
+		status, err := client.ZoneOperationStatus(config.Zone, operation.Name)
 		if err != nil {
 			ui.Error(fmt.Sprintf("Error destroying instance. Please destroy it manually: %v", s.instanceName))
 		}

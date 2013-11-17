@@ -21,7 +21,9 @@ type stepCreateSSHKey struct{}
 
 // Run executes the Packer build step that generates SSH key pairs.
 func (s *stepCreateSSHKey) Run(state multistep.StateBag) multistep.StepAction {
-	ui := state.Get("ui").(packer.Ui)
+	var (
+		ui = state.Get("ui").(packer.Ui)
+	)
 	ui.Say("Creating temporary ssh key for instance...")
 	priv, err := rsa.GenerateKey(rand.Reader, 2014)
 	if err != nil {
