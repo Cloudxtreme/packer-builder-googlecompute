@@ -2,7 +2,7 @@
 
 Type: `googlecompute`
 
-The `googlecompute` build is able to create new images for use with
+The `googlecompute` builder is able to create new images for use with
 [Google Compute](https://cloud.google.com/products/compute-engine).
 
 ## Install
@@ -44,3 +44,16 @@ Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) 
   }]
 }
 ```
+
+## Configuration Reference
+
+The reference of available configuration options is listed below.
+
+Required parameters:
+
+* `bucket_name` (string) - The Google Cloud Storage bucket to store machine images.
+* `client_secrets_path` (string) - The Google Compute client secrets file.
+* `private_key_path` (string) - The Google Compute service account private key.
+* `project_id` (string) - The Google Compute project id.
+* `source_image` (string) - The source image to use. For example debian-7-wheezy-v20131014.
+* `zone` (string) - The Google Compute zone.
