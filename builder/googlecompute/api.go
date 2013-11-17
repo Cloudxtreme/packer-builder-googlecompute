@@ -159,6 +159,27 @@ func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, error) 
 	return instance.Status, nil
 }
 
+// CreateImage
+func (g *GoogleComputeClient) CreateImage(name, description, sourceURL string) (*compute.Operation, error) {
+	imageRawDisk := &compute.ImageRawDisk{
+		ContainerType: "TAR",
+		Source:        sourceURL,
+	}
+	image := &compute.Image{
+		Description:     description,
+		Name:            name,
+		PreferredKernel: "https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-no-conn-track-v20130813",
+		RawDisk:         imageRawDisk,
+		SourceType:      "RAW",
+	}
+	imageInsertCall := g.Service.Images.Insert(g.ProjectId, image)
+	operation, err := imageInsertCall.Do()
+	if err != nil {
+		return nil, err
+	}
+	return operation, nil
+}
+
 // GetNatIp.
 func (g *GoogleComputeClient) GetNatIP(zone, name string) (string, error) {
 	instanceGetCall := g.Service.Instances.Get(g.ProjectId, zone, name)

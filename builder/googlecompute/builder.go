@@ -31,6 +31,7 @@ type config struct {
 	MachineType         string            `mapstructure:"machine_type"`
 	Metadata            map[string]string `mapstructure:"metadata"`
 	Network             string            `mapstructure:"network"`
+	PreferredKernel     string            `mapstructure:"preferred_kernel"`
 	PrivateKeyPath      string            `mapstructure:"private_key_path"`
 	ProjectId           string            `mapstructure:"project_id"`
 	SourceImage         string            `mapstructure:"source_image"`
@@ -70,12 +71,18 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 	if b.config.Network == "" {
 		b.config.Network = "default"
 	}
+	if b.config.ImageDescription == "" {
+		b.config.ImageDescription = "Created by Packer"
+	}
 	if b.config.ImageName == "" {
 		// Default to packer-{{ unix timestamp (utc) }}
 		b.config.ImageName = "packer-{{timestamp}}"
 	}
 	if b.config.MachineType == "" {
 		b.config.MachineType = "n1-standard-1"
+	}
+	if b.config.PreferredKernel == "" {
+		b.config.PreferredKernel = "gce-no-conn-track-v20130813"
 	}
 	if b.config.RawSSHTimeout == "" {
 		b.config.RawSSHTimeout = "5m"
