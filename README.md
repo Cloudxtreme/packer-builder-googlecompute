@@ -51,8 +51,9 @@ The reference of available configuration options is listed below.
 
 Required parameters:
 
-* `bucket_name` (string) - The Google Cloud Storage bucket to store machine images.
-* `client_secrets_path` (string) - The Google Compute client secrets file.
+* `bucket_name` (string) - The Google Cloud Storage bucket to store images.
+* `client_secrets_path` (string) - The client secrets file.
+* `preferred_kernel` (string) - The preferred kernel to use with this image.
 * `private_key_path` (string) - The Google Compute service account private key.
 * `project_id` (string) - The Google Compute project id.
 * `source_image` (string) - The source image to use. For example "debian-7-wheezy-v20131014".
