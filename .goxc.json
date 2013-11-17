@@ -1,0 +1,9 @@
+{
+	"ArtifactsDest": "/Users/kelseyhightower/Desktop/",
+	"Arch": "386 amd64",
+	"Os": "linux darwin freebsd openbsd windows",
+	"Resources": {},
+	"PackageVersion": "0.1.0",
+	"PrereleaseInfo": "beta1",
+	"FormatVersion": "0.8"
+}
