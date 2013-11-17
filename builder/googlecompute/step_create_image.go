@@ -11,12 +11,12 @@ import (
 	"github.com/mitchellh/packer/packer"
 )
 
-// stepCreateImage represents a packer step to create GCE machine images.
+// stepCreateImage represents a Packer build step that creates GCE machine images.
 type stepCreateImage struct {
 	imageName string
 }
 
-// Run executes the packer step that creates a GCE machine image.
+// Run executes the Packer build step that creates a GCE machine image.
 func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	var (
 		client = state.Get("client").(*GoogleComputeClient)

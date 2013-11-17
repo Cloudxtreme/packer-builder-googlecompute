@@ -6,17 +6,19 @@ package googlecompute
 
 import (
 	"fmt"
+
+	"code.google.com/p/google-api-go-client/compute/v1beta16"
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common/uuid"
 	"github.com/mitchellh/packer/packer"
-
-	"code.google.com/p/google-api-go-client/compute/v1beta16"
 )
 
+// stepCreateInstance represents a Packer build step that creates GCE instances.
 type stepCreateInstance struct {
 	instanceName string
 }
 
+// Run executes the Packer build step that creates a GCE instance.
 func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*GoogleComputeClient)
 	ui := state.Get("ui").(packer.Ui)
