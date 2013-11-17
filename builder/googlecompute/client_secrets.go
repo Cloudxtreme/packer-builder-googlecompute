@@ -20,7 +20,7 @@ type clientSecrets struct {
 	}
 }
 
-// loadClientSecrets
+// loadClientSecrets loads the GCE client secrets file identified by path.
 func loadClientSecrets(path string) (*clientSecrets, error) {
 	var cs *clientSecrets
 	secretBytes, err := ioutil.ReadFile(path)
