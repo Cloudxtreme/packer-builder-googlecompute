@@ -53,19 +53,21 @@ The reference of available configuration options is listed below.
 
 * `bucket_name` (string) - The Google Cloud Storage bucket to store images.
 * `client_secrets_file` (string) - The client secrets file.
-* `private_key_file` (string) - The Google Compute service account private key.
-* `project_id` (string) - The Google Compute project id.
-* `source_image` (string) - The source image to use. For example "debian-7-wheezy-v20131014".
-* `zone` (string) - The Google Compute zone.
+* `private_key_file` (string) - The service account private key.
+* `project_id` (string) - The GCE project id.
+* `source_image` (string) - The source image. Example `debian-7-wheezy-v20131014`.
+* `zone` (string) - The GCE zone.
 
 ### Optional parameters:
 
-* `image_name` (string) - The name of the resulting image that will appear in your account. This must be unique. To help make this unique, use a function like timestamp.
+* `image_name` (string) - The unique name of the resulting image.
 * `image_description` (string) - The description of the resulting image.
-* `machine_type` (string) - The machine type to use when building the image. The machine type must have a scratch disk. Defaults to `n1-standard-1`.
+* `machine_type` (string) - The machine type. Defaults to `n1-standard-1`.
 * `network` (string) - The Google Compute network. Defaults to `default`.
-* `preferred_kernel` (string) - The preferred kernel to use with this image. Defaults to `gce-no-conn-track-v20130813`.
-* `ssh_port` (int) - The port that SSH will be available on. Defaults to port 22.
-* `ssh_timeout` (string) - The time to wait for SSH to become available before timing out. The format of this value is a duration such as "5s" or "5m". The default SSH timeout is "1m".
-* `ssh_username` (string) - The username to use in order to communicate over SSH to the running instance. Default is `root`.
-* `state_timeout` (string) - The time to wait, as a duration string, for a instance to enter a desired state before timing out. The default state timeout is "6m".
+* `preferred_kernel` (string) - The preferred kernel. Defaults to `gce-no-conn-track-v20130813`.
+* `ssh_port` (int) - The SSH port. Defaults to `22`.
+* `ssh_timeout` (string) - The time to wait for SSH to become available. Defaults to `1m`.
+* `ssh_username` (string) - The SSH username. Defaults to `root`.
+* `state_timeout` (string) - The time to wait for instance state changes. Defaults to `5m`.
+
+> The machine type must have a scratch disk.
