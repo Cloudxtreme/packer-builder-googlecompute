@@ -2,8 +2,8 @@
 
 Type: `googlecompute`
 
-The `googlecompute` builder is able to create new images for use with
-[Google Compute](https://cloud.google.com/products/compute-engine).
+The `googlecompute` builder is able to create new [images](https://developers.google.com/compute/docs/images)
+for use with [Google Compute Engine](https://cloud.google.com/products/compute-engine).
 
 ## Install
 
@@ -62,10 +62,10 @@ The reference of available configuration options is listed below.
 
 * `image_name` (string) - The name of the resulting image that will appear in your account. This must be unique. To help make this unique, use a function like timestamp.
 * `image_description` (string) - The description of the resulting image.
-* `preferred_kernel` (string) - The preferred kernel to use with this image. Defaults to "gce-no-conn-track-v20130813".
-* `machine_type` (string) - The machine type to use when building the image. The machine type must have a scratch disk. Defaults to "n1-standard-1".
-* `network` (string) - The Google Compute network. Defaults to "default".
+* `machine_type` (string) - The machine type to use when building the image. The machine type must have a scratch disk. Defaults to `n1-standard-1`.
+* `network` (string) - The Google Compute network. Defaults to `default`.
+* `preferred_kernel` (string) - The preferred kernel to use with this image. Defaults to `gce-no-conn-track-v20130813`.
 * `ssh_port` (int) - The port that SSH will be available on. Defaults to port 22.
 * `ssh_timeout` (string) - The time to wait for SSH to become available before timing out. The format of this value is a duration such as "5s" or "5m". The default SSH timeout is "1m".
-* `ssh_username` (string) - The username to use in order to communicate over SSH to the running instance. Default is "root".
+* `ssh_username` (string) - The username to use in order to communicate over SSH to the running instance. Default is `root`.
 * `state_timeout` (string) - The time to wait, as a duration string, for a instance to enter a desired state before timing out. The default state timeout is "6m".
