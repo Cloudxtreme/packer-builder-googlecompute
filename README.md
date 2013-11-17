@@ -1,5 +1,7 @@
 # Google Compute Builder
 
+[![Build Status](https://travis-ci.org/kelseyhightower/packer-builder-googlecompute.png?branch=master)](https://travis-ci.org/kelseyhightower/packer-builder-googlecompute)
+
 Type: `googlecompute`
 
 The `googlecompute` builder is able to create new [images](https://developers.google.com/compute/docs/images)
