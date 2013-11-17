@@ -51,5 +51,5 @@ func (s *stepCreateSSHKey) Run(state multistep.StateBag) multistep.StepAction {
 }
 
 func (s *stepCreateSSHKey) Cleanup(state multistep.StateBag) {
-	// no clean up, keys are created directly on the GCE instance.
+	// Nothing to clean up. SSH keys are associated with a single GCE instance.
 }
