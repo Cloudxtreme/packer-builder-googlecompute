@@ -36,8 +36,8 @@ Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) 
   "builders": [{
     "type": "googlecompute",
     "bucket_name": "packer-images",
-    "client_secrets_path": "/path/client_secrets.json",
-    "private_key_path": "/path/private.key",
+    "client_secrets_file": "/path/client_secrets.json",
+    "private_key_file": "/path/private.key",
     "project_id": "my-project",
     "source_image": "debian-7-wheezy-v20131014",
     "zone": "us-central1-a"
@@ -52,8 +52,8 @@ The reference of available configuration options is listed below.
 ### Required parameters:
 
 * `bucket_name` (string) - The Google Cloud Storage bucket to store images.
-* `client_secrets_path` (string) - The client secrets file.
-* `private_key_path` (string) - The Google Compute service account private key.
+* `client_secrets_file` (string) - The client secrets file.
+* `private_key_file` (string) - The Google Compute service account private key.
 * `project_id` (string) - The Google Compute project id.
 * `source_image` (string) - The source image to use. For example "debian-7-wheezy-v20131014".
 * `zone` (string) - The Google Compute zone.
