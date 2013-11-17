@@ -53,7 +53,6 @@ Required parameters:
 
 * `bucket_name` (string) - The Google Cloud Storage bucket to store images.
 * `client_secrets_path` (string) - The client secrets file.
-* `preferred_kernel` (string) - The preferred kernel to use with this image.
 * `private_key_path` (string) - The Google Compute service account private key.
 * `project_id` (string) - The Google Compute project id.
 * `source_image` (string) - The source image to use. For example "debian-7-wheezy-v20131014".
@@ -62,6 +61,7 @@ Required parameters:
 Optional parameters:
 
 * `image_name` (string) - The name of the resulting image that will appear in your account. This must be unique. To help make this unique, use a function like timestamp.
+* `preferred_kernel` (string) - The preferred kernel to use with this image. Defaults to "gce-no-conn-track-v20130813".
 * `network` (string) - The Google Compute network. Defaults to "default".
 * `ssh_port` (int) - The port that SSH will be available on. Defaults to port 22.
 * `ssh_timeout` (string) - The time to wait for SSH to become available before timing out. The format of this value is a duration such as "5s" or "5m". The default SSH timeout is "1m".

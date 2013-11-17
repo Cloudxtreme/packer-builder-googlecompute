@@ -19,7 +19,7 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	imageBundleCmd := "/usr/share/imagebundle/image_bundle.py -r / -o /tmp/"
 	cmd := new(packer.RemoteCmd)
 	cmd.Command = fmt.Sprintf("%s --output_file_name %s -b %s", imageBundleCmd, c.ImageName, c.BucketName)
-	ui.Say("Creating image using: " + cmd.Command)
+	ui.Say("Creating image...")
 	err := cmd.StartWithUi(comm, ui)
 	if err != nil {
 		err := fmt.Errorf("Error creating image: %s", err)
@@ -27,8 +27,9 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
+	ui.Say("Adding image to the project...")
 	imageURL := fmt.Sprintf("https://storage.cloud.google.com/%s/%s", c.BucketName, c.ImageName)
-	operation, err := client.CreateImage(c.ImageName, c.ImageDescription, imageURL)
+	operation, err := client.CreateImage(c.ImageName, c.ImageDescription, imageURL, c.PreferredKernel)
 	if err != nil {
 		err := fmt.Errorf("Error creating image: %s", err)
 		state.Put("error", err)
