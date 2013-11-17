@@ -30,14 +30,14 @@ type Builder struct {
 // config holds the googlecompute builder configuration settings.
 type config struct {
 	BucketName          string            `mapstructure:"bucket_name"`
-	ClientSecretsPath   string            `mapstructure:"client_secrets_path"`
+	ClientSecretsFile   string            `mapstructure:"client_secrets_file"`
 	ImageName           string            `mapstructure:"image_name"`
 	ImageDescription    string            `mapstructure:"image_description"`
 	MachineType         string            `mapstructure:"machine_type"`
 	Metadata            map[string]string `mapstructure:"metadata"`
 	Network             string            `mapstructure:"network"`
 	PreferredKernel     string            `mapstructure:"preferred_kernel"`
-	PrivateKeyPath      string            `mapstructure:"private_key_path"`
+	PrivateKeyFile      string            `mapstructure:"private_key_file"`
 	ProjectId           string            `mapstructure:"project_id"`
 	SourceImage         string            `mapstructure:"source_image"`
 	SSHUsername         string            `mapstructure:"ssh_username"`
@@ -104,7 +104,20 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 	}
 	// Process Templates
 	templates := map[string]*string{
-		"image_name": &b.config.ImageName,
+		"bucket_name":         &b.config.BucketName,
+		"client_secrets_file": &b.config.ClientSecretsFile,
+		"image_name":          &b.config.ImageName,
+		"image_description":   &b.config.ImageDescription,
+		"machine_type":        &b.config.MachineType,
+		"network":             &b.config.Network,
+		"preferred_kernel":    &b.config.PreferredKernel,
+		"private_key_file":    &b.config.PrivateKeyFile,
+		"project_id":          &b.config.ProjectId,
+		"source_image":        &b.config.SourceImage,
+		"ssh_username":        &b.config.SSHUsername,
+		"ssh_timeout":         &b.config.RawSSHTimeout,
+		"state_timeout":       &b.config.RawStateTimeout,
+		"zone":                &b.config.Zone,
 	}
 	for n, ptr := range templates {
 		var err error
@@ -115,22 +128,18 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 		}
 	}
 	// Process required parameters.
-	// bucket_name is required.
 	if b.config.BucketName == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("a bucket_name must be specified"))
 	}
-	// client_secrets_path is required.
-	if b.config.ClientSecretsPath == "" {
+	if b.config.ClientSecretsFile == "" {
 		errs = packer.MultiErrorAppend(
-			errs, errors.New("a client_secrets_path must be specified"))
+			errs, errors.New("a client_secrets_file must be specified"))
 	}
-	// private_key_path is required.
-	if b.config.PrivateKeyPath == "" {
+	if b.config.PrivateKeyFile == "" {
 		errs = packer.MultiErrorAppend(
-			errs, errors.New("a private_key_path must be specified"))
+			errs, errors.New("a private_key_file must be specified"))
 	}
-	// project_id is required.
 	if b.config.ProjectId == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("a project_id must be specified"))
@@ -150,7 +159,6 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 			errs, fmt.Errorf("Failed parsing ssh_timeout: %s", err))
 	}
 	b.config.sshTimeout = sshTimeout
-	// Set the state timeout.
 	stateTimeout, err := time.ParseDuration(b.config.RawStateTimeout)
 	if err != nil {
 		errs = packer.MultiErrorAppend(
@@ -158,17 +166,17 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 	}
 	b.config.stateTimeout = stateTimeout
 	// Load the client secrets file.
-	cs, err := loadClientSecrets(b.config.ClientSecretsPath)
+	cs, err := loadClientSecrets(b.config.ClientSecretsFile)
 	if err != nil {
 		errs = packer.MultiErrorAppend(
 			errs, fmt.Errorf("Failed parsing client secrets file: %s", err))
 	}
 	b.config.clientSecrets = cs
 	// Load the private key.
-	privateKeyBytes, err := ioutil.ReadFile(b.config.PrivateKeyPath)
+	privateKeyBytes, err := ioutil.ReadFile(b.config.PrivateKeyFile)
 	if err != nil {
 		errs = packer.MultiErrorAppend(
-			errs, fmt.Errorf("Failed parsing client secrets file: %s", err))
+			errs, fmt.Errorf("Failed loading private key file: %s", err))
 
 	}
 	b.config.privateKeyBytes = privateKeyBytes
@@ -232,6 +240,4 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	return artifact, nil
 }
 
-func (b *Builder) Cancel() {
-	return
-}
+func (b *Builder) Cancel() {}
