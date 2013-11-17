@@ -21,13 +21,14 @@ import (
 // The unique ID for this builder
 const BuilderId = "kelseyhightower.googlecompute"
 
+// Builder represents a Packer Builder.
 type Builder struct {
 	config config
 	runner multistep.Runner
 }
 
+// config holds the googlecompute builder configuration settings.
 type config struct {
-	common.PackerConfig `mapstructure:",squash"`
 	BucketName          string            `mapstructure:"bucket_name"`
 	ClientSecretsPath   string            `mapstructure:"client_secrets_path"`
 	ImageName           string            `mapstructure:"image_name"`
@@ -45,15 +46,16 @@ type config struct {
 	RawStateTimeout     string            `mapstructure:"state_timeout"`
 	Tags                []string          `mapstructure:"tags"`
 	Zone                string            `mapstructure:"zone"`
-	// Private configuration settings not seen by the user.
-	clientSecrets   *clientSecrets
-	instanceName    string
-	privateKeyBytes []byte
-	sshTimeout      time.Duration
-	stateTimeout    time.Duration
-	tpl             *packer.ConfigTemplate
+	clientSecrets       *clientSecrets
+	common.PackerConfig `mapstructure:",squash"`
+	instanceName        string
+	privateKeyBytes     []byte
+	sshTimeout          time.Duration
+	stateTimeout        time.Duration
+	tpl                 *packer.ConfigTemplate
 }
 
+// Prepare processes the build configuration parameters.
 func (b *Builder) Prepare(raws ...interface{}) error {
 	// Load the packer config.
 	md, err := common.DecodeConfig(&b.config, raws...)
@@ -177,8 +179,10 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 	return nil
 }
 
+// Run executes a googlecompute Packer build and returns a packer.Artifact
+// representing a GCE machine image.
 func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packer.Artifact, error) {
-	// Initialize the Google Compute Engine api.
+	// Initialize the Google Compute Engine API.
 	client, err := New(b.config.ProjectId, b.config.Zone, b.config.clientSecrets, b.config.privateKeyBytes)
 	if err != nil {
 		log.Println("Failed to create the Google Compute Engine client.")
@@ -190,7 +194,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	state.Put("client", client)
 	state.Put("hook", hook)
 	state.Put("ui", ui)
-	// Build the steps
+	// Build the steps.
 	steps := []multistep.Step{
 		new(stepCreateSSHKey),
 		new(stepCreateInstance),
@@ -203,7 +207,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		new(common.StepProvision),
 		new(stepCreateImage),
 	}
-	// Run the steps
+	// Run the steps.
 	if b.config.PackerDebug {
 		b.runner = &multistep.DebugRunner{
 			Steps:   steps,
@@ -213,7 +217,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		b.runner = &multistep.BasicRunner{Steps: steps}
 	}
 	b.runner.Run(state)
-	// If there was an error, return that
+	// Report any errors.
 	if rawErr, ok := state.GetOk("error"); ok {
 		return nil, rawErr.(error)
 	}
