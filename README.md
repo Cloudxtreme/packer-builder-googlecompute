@@ -11,7 +11,7 @@ Download a binary release from [Github](https://github.com/kelseyhightower/packe
 Extract then copy the `packer-builder-googlecompute` binary to the Packer installation directory.
 
 ```Bash
-unzip packer-builder-googlecompute_0.1.0-beta1_darwin_amd64.zip
+unzip packer-builder-googlecompute_0.1.0-beta2_darwin_amd64.zip
 cp packer-builder-googlecompute /usr/local/packer/
 ```
 
