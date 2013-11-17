@@ -56,22 +56,22 @@ type config struct {
 }
 
 // Prepare processes the build configuration parameters.
-func (b *Builder) Prepare(raws ...interface{}) error {
+func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 	// Load the packer config.
 	md, err := common.DecodeConfig(&b.config, raws...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	b.config.tpl, err = packer.NewConfigTemplate()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	b.config.tpl.UserVars = b.config.PackerUserVars
 
 	errs := common.CheckUnusedConfig(md)
 	// Collect errors if any.
 	if err := common.CheckUnusedConfig(md); err != nil {
-		return err
+		return nil, err
 	}
 	// Set defaults.
 	if b.config.Network == "" {
@@ -182,9 +182,9 @@ func (b *Builder) Prepare(raws ...interface{}) error {
 	b.config.privateKeyBytes = privateKeyBytes
 	// Check for any errors.
 	if errs != nil && len(errs.Errors) > 0 {
-		return errs
+		return nil, errs
 	}
-	return nil
+	return nil, nil
 }
 
 // Run executes a googlecompute Packer build and returns a packer.Artifact

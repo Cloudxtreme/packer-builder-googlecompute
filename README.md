@@ -15,6 +15,8 @@ unzip packer-builder-googlecompute_0.1.0-beta1_darwin_amd64.zip
 cp packer-builder-googlecompute /usr/local/packer/
 ```
 
+> Packer version v0.3.11+ required.
+
 ## Configure
 
 Enable the googlecompute builder in `~/.packerconfig`
