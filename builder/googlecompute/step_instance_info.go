@@ -6,12 +6,15 @@ package googlecompute
 
 import (
 	"fmt"
+
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/packer"
 )
 
+// stepInstanceInfo represents a Packer build step that gathers GCE instance info.
 type stepInstanceInfo struct{}
 
+// Run executes the Packer build step that gathers GCE instance info.
 func (s *stepInstanceInfo) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*GoogleComputeClient)
 	ui := state.Get("ui").(packer.Ui)
@@ -36,5 +39,5 @@ func (s *stepInstanceInfo) Run(state multistep.StateBag) multistep.StepAction {
 }
 
 func (s *stepInstanceInfo) Cleanup(state multistep.StateBag) {
-	// no cleanup
+	// Nothing to cleanup.
 }

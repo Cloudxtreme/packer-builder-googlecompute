@@ -5,23 +5,25 @@
 package googlecompute
 
 import (
-	"code.google.com/p/go.crypto/ssh"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+
+	"code.google.com/p/go.crypto/ssh"
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/packer"
 )
 
+// stepCreateSSHKey represents a Packer build step that generates SSH key pairs.
 type stepCreateSSHKey struct{}
 
+// Run executes the Packer build step that generates SSH key pairs.
 func (s *stepCreateSSHKey) Run(state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 	ui.Say("Creating temporary ssh key for instance...")
 	priv, err := rsa.GenerateKey(rand.Reader, 2014)
-
 	if err != nil {
 		err := fmt.Errorf("Error creating temporary ssh key: %s", err)
 		state.Put("error", err)
