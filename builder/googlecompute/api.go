@@ -70,7 +70,6 @@ func New(projectId string, zone string, c *clientSecrets, pemKey []byte) (*Googl
 }
 
 // GetZone returns a *compute.Zone representing the named zone.
-// It returns an error if any.
 func (g *GoogleComputeClient) GetZone(name string) (*compute.Zone, error) {
 	zoneGetCall := g.Service.Zones.Get(g.ProjectId, name)
 	zone, err := zoneGetCall.Do()
@@ -81,7 +80,6 @@ func (g *GoogleComputeClient) GetZone(name string) (*compute.Zone, error) {
 }
 
 // GetMachineType returns a *compute.MachineType representing the named machine type.
-// It returns an error if any.
 func (g *GoogleComputeClient) GetMachineType(name, zone string) (*compute.MachineType, error) {
 	machineTypesGetCall := g.Service.MachineTypes.Get(g.ProjectId, zone, name)
 	machineType, err := machineTypesGetCall.Do()
@@ -95,7 +93,6 @@ func (g *GoogleComputeClient) GetMachineType(name, zone string) (*compute.Machin
 }
 
 // GetImage returns a *compute.Image representing the named image.
-// It returns an error if any.
 func (g *GoogleComputeClient) GetImage(name string) (*compute.Image, error) {
 	// First try and find the image in the users project
 	imagesGetCall := g.Service.Images.Get(g.ProjectId, name)
@@ -117,8 +114,7 @@ func (g *GoogleComputeClient) GetImage(name string) (*compute.Image, error) {
 	return nil, errors.New("Image does not exist: " + name)
 }
 
-// GetKernel returns a *compute.Kernel.
-// It returns an error if any.
+// GetKernel returns a *compute.Kernel representing the named kernel.
 func (g *GoogleComputeClient) GetKernel(name string) (*compute.Kernel, error) {
 	kernelGetCall := g.Service.Kernels.Get("google", name)
 	kernel, err := kernelGetCall.Do()
@@ -129,7 +125,6 @@ func (g *GoogleComputeClient) GetKernel(name string) (*compute.Kernel, error) {
 }
 
 // GetNetwork returns a *compute.Network representing the named network.
-// It returns an error if any.
 func (g *GoogleComputeClient) GetNetwork(name string) (*compute.Network, error) {
 	networkGetCall := g.Service.Networks.Get(g.ProjectId, name)
 	network, err := networkGetCall.Do()
@@ -141,7 +136,6 @@ func (g *GoogleComputeClient) GetNetwork(name string) (*compute.Network, error) 
 
 // CreateInstance creates an instance in Google Compute Engine based on the
 // supplied instanceConfig.
-// It returns an error if any.
 func (g *GoogleComputeClient) CreateInstance(zone string, instanceConfig *InstanceConfig) (*compute.Operation, error) {
 	// Attache disk
 	instance := &compute.Instance{
@@ -174,7 +168,7 @@ func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, error) 
 	return instance.Status, nil
 }
 
-// CreateImage
+// CreateImage registers a GCE Image with a project.
 func (g *GoogleComputeClient) CreateImage(name, description, sourceURL, preferredKernel string) (*compute.Operation, error) {
 	kernel, err := g.GetKernel(preferredKernel)
 	if err != nil {
@@ -199,7 +193,7 @@ func (g *GoogleComputeClient) CreateImage(name, description, sourceURL, preferre
 	return operation, nil
 }
 
-// GetNatIp.
+// GetNatIp returns the public IPv4 address for named GCE instance.
 func (g *GoogleComputeClient) GetNatIP(zone, name string) (string, error) {
 	instanceGetCall := g.Service.Instances.Get(g.ProjectId, zone, name)
 	instance, err := instanceGetCall.Do()
@@ -219,7 +213,7 @@ func (g *GoogleComputeClient) GetNatIP(zone, name string) (string, error) {
 	return "", nil
 }
 
-// ZoneOperationStatus.
+// ZoneOperationStatus returns the status for the named zone operation.
 func (g *GoogleComputeClient) ZoneOperationStatus(zone, name string) (string, error) {
 	zoneOperationsGetCall := g.Service.ZoneOperations.Get(g.ProjectId, zone, name)
 	operation, err := zoneOperationsGetCall.Do()
@@ -235,7 +229,7 @@ func (g *GoogleComputeClient) ZoneOperationStatus(zone, name string) (string, er
 	return operation.Status, nil
 }
 
-// GlobalOperationStatus.
+// GlobalOperationStatus returns the status for the named global operation.
 func (g *GoogleComputeClient) GlobalOperationStatus(name string) (string, error) {
 	globalOperationsGetCall := g.Service.GlobalOperations.Get(g.ProjectId, name)
 	operation, err := globalOperationsGetCall.Do()
@@ -251,7 +245,7 @@ func (g *GoogleComputeClient) GlobalOperationStatus(name string) (string, error)
 	return operation.Status, nil
 }
 
-// processOperationStatus.
+// processOperationStatus extracts errors from the specified operation.
 func processOperationStatus(o *compute.Operation) error {
 	if o.Error != nil {
 		messages := make([]string, len(o.Error.Errors))
@@ -263,8 +257,7 @@ func processOperationStatus(o *compute.Operation) error {
 	return nil
 }
 
-// DeleteImage deletes the named image.
-// Returns a Global Operation and an error if any.
+// DeleteImage deletes the named image. Returns a Global Operation.
 func (g *GoogleComputeClient) DeleteImage(name string) (*compute.Operation, error) {
 	imagesDeleteCall := g.Service.Images.Delete(g.ProjectId, name)
 	operation, err := imagesDeleteCall.Do()
@@ -274,8 +267,7 @@ func (g *GoogleComputeClient) DeleteImage(name string) (*compute.Operation, erro
 	return operation, nil
 }
 
-// DeleteInstance deletes the named instance.
-// Returns a Zone Operation and an error if any.
+// DeleteInstance deletes the named instance. Returns a Zone Operation.
 func (g *GoogleComputeClient) DeleteInstance(zone, name string) (*compute.Operation, error) {
 	instanceDeleteCall := g.Service.Instances.Delete(g.ProjectId, zone, name)
 	operation, err := instanceDeleteCall.Do()
@@ -285,7 +277,7 @@ func (g *GoogleComputeClient) DeleteInstance(zone, name string) (*compute.Operat
 	return operation, nil
 }
 
-// NewNetworkInterface returns a *compute.NetworkInterface.
+// NewNetworkInterface returns a *compute.NetworkInterface based on the data provided.
 func NewNetworkInterface(network *compute.Network, public bool) *compute.NetworkInterface {
 	accessConfigs := make([]*compute.AccessConfig, 0)
 	if public {
@@ -301,7 +293,8 @@ func NewNetworkInterface(network *compute.Network, public bool) *compute.Network
 	}
 }
 
-// NewServiceAccount returns a *compute.ServiceAccount.
+// NewServiceAccount returns a *compute.ServiceAccount with permissions required
+// for creating GCE machine images.
 func NewServiceAccount(email string) *compute.ServiceAccount {
 	return &compute.ServiceAccount{
 		Email: email,
