@@ -62,5 +62,5 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 }
 
 func (s *stepCreateImage) Cleanup(state multistep.StateBag) {
-	return
+	// Nothing to cleanup.
 }
