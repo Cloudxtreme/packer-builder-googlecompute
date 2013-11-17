@@ -7,19 +7,17 @@ for use with [Google Compute Engine](https://cloud.google.com/products/compute-e
 
 ## Install
 
-Download and build Packer from source as described [here](https://github.com/mitchellh/packer#developing-packer).
+Download a binary release from [Github](https://github.com/kelseyhightower/packer-builder-googlecompute/releases).
+Extract then copy the `packer-builder-googlecompute` binary to the Packer installation directory.
 
-Next, clone this repository into `$GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute`.  Then build the packer-builder-googlecompute binary:
-
-```
-cd $GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute
-go build -o /usr/local/packer/packer-builder-googlecompute \
-plugin/builder-googlecompute/main.go
+```Bash
+unzip packer-builder-googlecompute_0.1.0-beta1_darwin_amd64.zip
+cp packer-builder-googlecompute /usr/local/packer/
 ```
 
-Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) to pick up the new builder:
+## Configure
 
-`~/.packerconfig`
+Enable the googlecompute builder in `~/.packerconfig`
 
 ```
 {
@@ -28,6 +26,8 @@ Now [configure Packer](http://www.packer.io/docs/other/core-configuration.html) 
   }
 }
 ```
+
+> See [configure Packer](http://www.packer.io/docs/other/core-configuration.html) for more info.
 
 ## Basic Example
 
@@ -71,3 +71,15 @@ The reference of available configuration options is listed below.
 * `state_timeout` (string) - The time to wait for instance state changes. Defaults to `5m`.
 
 > The machine type must have a scratch disk.
+
+## Building
+
+Download and build Packer from source as described [here](https://github.com/mitchellh/packer#developing-packer).
+
+Next, clone this repository into `$GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute`.  Then build the packer-builder-googlecompute binary:
+
+```
+cd $GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute
+go build -o /usr/local/packer/packer-builder-googlecompute \
+plugin/builder-googlecompute/main.go
+```
