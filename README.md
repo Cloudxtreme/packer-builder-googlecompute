@@ -60,7 +60,7 @@ The reference of available configuration options is listed below.
 
 ### Optional parameters:
 
-* `image_name` (string) - The unique name of the resulting image. Defaults to `packer-{{timestamp}}`
+* `image_name` (string) - The unique name of the resulting image. Defaults to `packer-{{timestamp}}`.
 * `image_description` (string) - The description of the resulting image.
 * `machine_type` (string) - The machine type. Defaults to `n1-standard-1`.
 * `network` (string) - The Google Compute network. Defaults to `default`.
