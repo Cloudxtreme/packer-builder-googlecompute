@@ -55,5 +55,14 @@ Required parameters:
 * `client_secrets_path` (string) - The Google Compute client secrets file.
 * `private_key_path` (string) - The Google Compute service account private key.
 * `project_id` (string) - The Google Compute project id.
-* `source_image` (string) - The source image to use. For example debian-7-wheezy-v20131014.
+* `source_image` (string) - The source image to use. For example "debian-7-wheezy-v20131014".
 * `zone` (string) - The Google Compute zone.
+
+Optional parameters:
+
+* `image_name` (string) - The name of the resulting image that will appear in your account. This must be unique. To help make this unique, use a function like timestamp.
+* `network` (string) - The Google Compute network. Defaults to "default".
+* `ssh_port` (int) - The port that SSH will be available on. Defaults to port 22.
+* `ssh_timeout` (string) - The time to wait for SSH to become available before timing out. The format of this value is a duration such as "5s" or "5m". The default SSH timeout is "1m".
+* `ssh_username` (string) - The username to use in order to communicate over SSH to the running instance. Default is "root".
+* `state_timeout` (string) - The time to wait, as a duration string, for a instance to enter a desired state before timing out. The default state timeout is "6m".
