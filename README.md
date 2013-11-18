@@ -33,7 +33,7 @@ Enable the googlecompute builder in `~/.packerconfig`
 
 > See [configure Packer](http://www.packer.io/docs/other/core-configuration.html) for more info.
 
-## GCE Credentials
+### GCE Credentials
 
 The `googlecompute` builder requires a GCE [service account](https://developers.google.com/console/help/#service_accounts). 
 
