@@ -97,7 +97,7 @@ The reference of available configuration options is listed below.
 
 ## Building
 
-Clone this repository into `$GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute`.  Then build the packer-builder-googlecompute binary:
+Clone this repository into `$GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute`.  Then build the `packer-builder-googlecompute` binary:
 
 ```
 cd $GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute
