@@ -42,6 +42,8 @@ The client_secrets.json and privatekey.p12 are required:
 * client_secret_XXXXXX-XXXXXX.apps.googleusercontent.com.json
 * XXXXXX-privatekey.p12
 
+> The client_secrets.json file can be downloaded from the Cloud Console under the API & auth (Registered apps) section. Click on a service account, then on the next sscreen click the "Downlad JSON" button.
+
 The `XXXXXX-privatekey.p12` must be converted to pem format. This can
 be done using the openssl commandline tool:
 
@@ -50,6 +52,18 @@ openssl pkcs12 -in XXXXXX-privatekey.p12 -out XXXXXX-privatekey.pem
 ```
 
 When prompted for "Enter Import Password", enter `notasecret`.
+
+### GCE Permissions
+
+API permissions needed:
+
+* Google Storage API
+* Google Storage JSON API
+* Google Compute Engine
+
+### Google Cloud Storage Bucket
+
+Create a bucket where GCE images will be stored and ensure its permissions are available to your service app.
 
 ## Basic Example
 
