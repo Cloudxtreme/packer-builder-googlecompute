@@ -33,6 +33,29 @@ Enable the googlecompute builder in `~/.packerconfig`
 
 > See [configure Packer](http://www.packer.io/docs/other/core-configuration.html) for more info.
 
+## GCE Credentials
+
+The `googlecompute` builder requires a GCE [service account](https://developers.google.com/console/help/#service_accounts). 
+
+The client_secrets.json and privatekey.p12 are required:
+
+* client_secret_XXXXXX-XXXXXX.apps.googleusercontent.com.json
+* XXXXXX-privatekey.p12
+
+The `XXXXXX-privatekey.p12` must be converted to pem format. This can
+be done using the openssl commandline tool:
+
+```Bash
+openssl pkcs12 -in XXXXXX-privatekey.p12 -out XXXXXX-privatekey.pem
+```
+
+When prompted for "Enter Import Password", enter `notasecret`. Currently the `googlecompute` builder does not support
+a passphrase protected private key. You can remove the passphrase by running the following command:
+
+```Bash
+openssl rsa -in XXXXX-privatekey.pem -out no-passphrase-privatekey.pem
+```
+
 ## Basic Example
 
 ```JSON
