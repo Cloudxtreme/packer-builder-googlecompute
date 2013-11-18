@@ -63,8 +63,8 @@ openssl rsa -in XXXXX-privatekey.pem -out no-passphrase-privatekey.pem
   "builders": [{
     "type": "googlecompute",
     "bucket_name": "packer-images",
-    "client_secrets_file": "/path/client_secrets.json",
-    "private_key_file": "/path/private.key",
+    "client_secrets_file": "client_secret_XXXXXX-XXXXXX.apps.googleusercontent.com.json",
+    "private_key_file": "no-passphrase-privatekey.pem",
     "project_id": "my-project",
     "source_image": "debian-7-wheezy-v20131014",
     "zone": "us-central1-a"
