@@ -24,7 +24,7 @@ func (s *stepRegisterImage) Run(state multistep.StateBag) multistep.StepAction {
 		ui     = state.Get("ui").(packer.Ui)
 	)
 	ui.Say("Adding image to the project...")
-	imageURL := fmt.Sprintf("https://storage.cloud.google.com/%s/%s", config.BucketName, config.ImageName)
+	imageURL := fmt.Sprintf("https://storage.cloud.google.com/%s/%s.tar.gz", config.BucketName, config.ImageName)
 	operation, err := client.CreateImage(config.ImageName, config.ImageDescription, imageURL, config.PreferredKernel)
 	if err != nil {
 		err := fmt.Errorf("Error creating image: %s", err)

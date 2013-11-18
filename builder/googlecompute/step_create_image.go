@@ -29,7 +29,7 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	// Cloud Storage bucket before it can be made available to the GCE project.
 	imageBundleCmd := "/usr/share/imagebundle/image_bundle.py -r / -o /tmp/"
 	cmd := new(packer.RemoteCmd)
-	cmd.Command = fmt.Sprintf("%s --output_file_name %s -b %s",
+	cmd.Command = fmt.Sprintf("%s --output_file_name %s.tar.gz -b %s",
 		imageBundleCmd, config.ImageName, config.BucketName)
 	err := cmd.StartWithUi(comm, ui)
 	if err != nil {
