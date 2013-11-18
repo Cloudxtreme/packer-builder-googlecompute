@@ -104,8 +104,13 @@ Next, clone this repository into `$GOPATH/src/github.com/kelseyhightower/packer-
 ```
 cd $GOPATH/src/github.com/kelseyhightower/packer-builder-googlecompute
 go get -v ./...
-go build -o /usr/local/packer/packer-builder-googlecompute \
-./plugin/packer-builder-googlecompute/main.go
+go build ./plugin/packer-builder-googlecompute
+```
+
+Copy the results to the Packer install directory.
+
+```
+cp packer-builder-googlecompute /usr/local/packer/packer-builder-googlecompute
 ```
 
 > The go get -v ./... command should download and install all required dependencies.
