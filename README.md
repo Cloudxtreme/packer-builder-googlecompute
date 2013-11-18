@@ -49,12 +49,7 @@ be done using the openssl commandline tool:
 openssl pkcs12 -in XXXXXX-privatekey.p12 -out XXXXXX-privatekey.pem
 ```
 
-When prompted for "Enter Import Password", enter `notasecret`. Currently the `googlecompute` builder does not support
-a passphrase protected private key. You can remove the passphrase by running the following command:
-
-```Bash
-openssl rsa -in XXXXX-privatekey.pem -out no-passphrase-privatekey.pem
-```
+When prompted for "Enter Import Password", enter `notasecret`.
 
 ## Basic Example
 
@@ -64,7 +59,7 @@ openssl rsa -in XXXXX-privatekey.pem -out no-passphrase-privatekey.pem
     "type": "googlecompute",
     "bucket_name": "packer-images",
     "client_secrets_file": "client_secret_XXXXXX-XXXXXX.apps.googleusercontent.com.json",
-    "private_key_file": "no-passphrase-privatekey.pem",
+    "private_key_file": "XXXXXX-privatekey.pem",
     "project_id": "my-project",
     "source_image": "debian-7-wheezy-v20131014",
     "zone": "us-central1-a"
@@ -91,6 +86,7 @@ The reference of available configuration options is listed below.
 * `image_description` (string) - The description of the resulting image.
 * `machine_type` (string) - The machine type. Defaults to `n1-standard-1`.
 * `network` (string) - The Google Compute network. Defaults to `default`.
+* `passphrase` (string) - The passphrase to use if the `private_key_file` is encrypted.
 * `preferred_kernel` (string) - The preferred kernel. Defaults to `gce-no-conn-track-v20130813`.
 * `ssh_port` (int) - The SSH port. Defaults to `22`.
 * `ssh_timeout` (string) - The time to wait for SSH to become available. Defaults to `1m`.

@@ -9,7 +9,6 @@ package googlecompute
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"time"
 
@@ -36,6 +35,7 @@ type config struct {
 	MachineType         string            `mapstructure:"machine_type"`
 	Metadata            map[string]string `mapstructure:"metadata"`
 	Network             string            `mapstructure:"network"`
+	Passphrase          string            `mapstructure:"passphrase"`
 	PreferredKernel     string            `mapstructure:"preferred_kernel"`
 	PrivateKeyFile      string            `mapstructure:"private_key_file"`
 	ProjectId           string            `mapstructure:"project_id"`
@@ -173,13 +173,11 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 	}
 	b.config.clientSecrets = cs
 	// Load the private key.
-	privateKeyBytes, err := ioutil.ReadFile(b.config.PrivateKeyFile)
+	b.config.privateKeyBytes, err = processPrivateKeyFile(b.config.PrivateKeyFile, b.config.Passphrase)
 	if err != nil {
 		errs = packer.MultiErrorAppend(
 			errs, fmt.Errorf("Failed loading private key file: %s", err))
-
 	}
-	b.config.privateKeyBytes = privateKeyBytes
 	// Check for any errors.
 	if errs != nil && len(errs.Errors) > 0 {
 		return nil, errs
