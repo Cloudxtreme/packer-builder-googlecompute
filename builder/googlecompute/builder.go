@@ -110,6 +110,7 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 		"image_description":   &b.config.ImageDescription,
 		"machine_type":        &b.config.MachineType,
 		"network":             &b.config.Network,
+		"passphrase":          &b.config.Passphrase,
 		"preferred_kernel":    &b.config.PreferredKernel,
 		"private_key_file":    &b.config.PrivateKeyFile,
 		"project_id":          &b.config.ProjectId,
