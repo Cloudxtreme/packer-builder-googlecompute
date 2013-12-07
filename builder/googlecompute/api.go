@@ -114,16 +114,6 @@ func (g *GoogleComputeClient) GetImage(name string) (*compute.Image, error) {
 	return nil, errors.New("Image does not exist: " + name)
 }
 
-// GetKernel returns a *compute.Kernel representing the named kernel.
-func (g *GoogleComputeClient) GetKernel(name string) (*compute.Kernel, error) {
-	kernelGetCall := g.Service.Kernels.Get("google", name)
-	kernel, err := kernelGetCall.Do()
-	if err != nil {
-		return nil, err
-	}
-	return kernel, nil
-}
-
 // GetNetwork returns a *compute.Network representing the named network.
 func (g *GoogleComputeClient) GetNetwork(name string) (*compute.Network, error) {
 	networkGetCall := g.Service.Networks.Get(g.ProjectId, name)
@@ -169,21 +159,16 @@ func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, error) 
 }
 
 // CreateImage registers a GCE Image with a project.
-func (g *GoogleComputeClient) CreateImage(name, description, sourceURL, preferredKernel string) (*compute.Operation, error) {
-	kernel, err := g.GetKernel(preferredKernel)
-	if err != nil {
-		return nil, err
-	}
+func (g *GoogleComputeClient) CreateImage(name, description, sourceURL) (*compute.Operation, error) {
 	imageRawDisk := &compute.ImageRawDisk{
 		ContainerType: "TAR",
 		Source:        sourceURL,
 	}
 	image := &compute.Image{
-		Description:     description,
-		Name:            name,
-		PreferredKernel: kernel.SelfLink,
-		RawDisk:         imageRawDisk,
-		SourceType:      "RAW",
+		Description: description,
+		Name:        name,
+		RawDisk:     imageRawDisk,
+		SourceType:  "RAW",
 	}
 	imageInsertCall := g.Service.Images.Insert(g.ProjectId, image)
 	operation, err := imageInsertCall.Do()

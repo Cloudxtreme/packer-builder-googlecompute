@@ -101,7 +101,6 @@ The reference of available configuration options is listed below.
 * `machine_type` (string) - The machine type. Defaults to `n1-standard-1`.
 * `network` (string) - The Google Compute network. Defaults to `default`.
 * `passphrase` (string) - The passphrase to use if the `private_key_file` is encrypted.
-* `preferred_kernel` (string) - The preferred kernel. Defaults to `gce-no-conn-track-v20130813`.
 * `ssh_port` (int) - The SSH port. Defaults to `22`.
 * `ssh_timeout` (string) - The time to wait for SSH to become available. Defaults to `1m`.
 * `ssh_username` (string) - The SSH username. Defaults to `root`.
