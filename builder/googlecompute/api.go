@@ -159,7 +159,7 @@ func (g *GoogleComputeClient) InstanceStatus(zone, name string) (string, error) 
 }
 
 // CreateImage registers a GCE Image with a project.
-func (g *GoogleComputeClient) CreateImage(name, description, sourceURL) (*compute.Operation, error) {
+func (g *GoogleComputeClient) CreateImage(name, description, sourceURL string) (*compute.Operation, error) {
 	imageRawDisk := &compute.ImageRawDisk{
 		ContainerType: "TAR",
 		Source:        sourceURL,
