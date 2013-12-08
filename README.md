@@ -106,7 +106,8 @@ The reference of available configuration options is listed below.
 * `ssh_username` (string) - The SSH username. Defaults to `root`.
 * `state_timeout` (string) - The time to wait for instance state changes. Defaults to `5m`.
 
-> The machine type must have a scratch disk.
+> The machine type must have a scratch disk, which means you can't use an `f1-micro` or `g1-small` to build images.
+> Centos images have root ssh access disabled by default. Set `ssh_username` to any user, which will be created by packer with sudo access.
 
 ## Building
 
