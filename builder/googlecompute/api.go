@@ -6,7 +6,6 @@ package googlecompute
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"strings"
 
@@ -94,17 +93,20 @@ func (g *GoogleComputeClient) GetMachineType(name, zone string) (*compute.Machin
 
 // GetImage returns a *compute.Image representing the named image.
 func (g *GoogleComputeClient) GetImage(name string) (*compute.Image, error) {
-	// First try and find the image in the users project
-	imagesGetCall := g.Service.Images.Get(g.ProjectId, name)
-	image, err := imagesGetCall.Do()
-	if err != nil {
-		log.Printf("Cannot find image: %s in project %s", name, g.ProjectId)
+	var err error
+	var image *compute.Image
+	// Images are either stored in the user's project or the shared GCE
+	// image stores.
+	projects := []string{g.ProjectId, "debian-cloud", "centos-cloud"}
+	for _, project := range projects {
+		imagesGetCall := g.Service.Images.Get(project, name)
+		image, err = imagesGetCall.Do()
+		if image != nil {
+			break
+		}
 	}
-	// Now try and find the image in the debian-cloud
-	imagesGetCall = g.Service.Images.Get("debian-cloud", name)
-	image, err = imagesGetCall.Do()
 	if err != nil {
-		log.Printf("Cannot find image: %s in project %s", name, g.ProjectId)
+		return nil, err
 	}
 	if image != nil {
 		if image.SelfLink != "" {
