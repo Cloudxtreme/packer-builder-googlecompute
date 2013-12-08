@@ -17,16 +17,22 @@ type stepUpdateGsutil int
 // Run executes the Packer build step that creates a GCE machine image.
 func (s *stepUpdateGsutil) Run(state multistep.StateBag) multistep.StepAction {
 	var (
-		comm   = state.Get("communicator").(packer.Communicator)
-		ui     = state.Get("ui").(packer.Ui)
+		config     = state.Get("config").(config)
+		comm       = state.Get("communicator").(packer.Communicator)
+		sudoPrefix = ""
+		ui         = state.Get("ui").(packer.Ui)
 	)
 	ui.Say("Updating gsutil...")
 	// Update gsutil now to prevent image creation from hanging.
 	// The gcimagebundle command used in the create_image step calls gsutil
 	// in the background, which can hang the image creation process with a prompt
 	// to update gsutil if not running the latest version.
+	if config.SSHUsername != "root" {
+		sudoPrefix = "sudo "
+	}
+	gsutilUpdateCmd := "/usr/local/bin/gsutil update -n -f"
 	cmd := new(packer.RemoteCmd)
-	cmd.Command = "/usr/local/bin/gsutil update -n -f"
+	cmd.Command = fmt.Sprintf("%s%s", sudoPrefix, gsutilUpdateCmd)
 	err := cmd.StartWithUi(comm, ui)
 	if err != nil {
 		err := fmt.Errorf("Error updating gsutil: %s", err)
