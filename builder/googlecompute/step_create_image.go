@@ -27,7 +27,7 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	// Google Compute images must be created using the image_bundle.py utility
 	// from the target GCE instance. Next the image must be uploaded to a Google
 	// Cloud Storage bucket before it can be made available to the GCE project.
-	imageBundleCmd := "/usr/share/imagebundle/image_bundle.py -r / -o /tmp/"
+	imageBundleCmd := "/usr/bin/gcimagebundle -d /dev/sda -o /tmp/"
 	cmd := new(packer.RemoteCmd)
 	cmd.Command = fmt.Sprintf("%s --output_file_name %s.tar.gz -b %s",
 		imageBundleCmd, config.ImageName, config.BucketName)
