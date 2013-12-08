@@ -4,6 +4,6 @@
 	"Os": "linux darwin freebsd openbsd windows",
 	"Resources": {},
 	"PackageVersion": "0.1.0",
-	"PrereleaseInfo": "beta4",
+	"PrereleaseInfo": "rc1",
 	"FormatVersion": "0.8"
 }
