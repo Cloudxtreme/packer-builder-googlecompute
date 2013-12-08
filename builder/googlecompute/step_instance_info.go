@@ -12,7 +12,7 @@ import (
 )
 
 // stepInstanceInfo represents a Packer build step that gathers GCE instance info.
-type stepInstanceInfo struct{}
+type stepInstanceInfo int
 
 // Run executes the Packer build step that gathers GCE instance info.
 func (s *stepInstanceInfo) Run(state multistep.StateBag) multistep.StepAction {
@@ -40,4 +40,5 @@ func (s *stepInstanceInfo) Run(state multistep.StateBag) multistep.StepAction {
 	return multistep.ActionContinue
 }
 
+// Cleanup.
 func (s *stepInstanceInfo) Cleanup(state multistep.StateBag) {}

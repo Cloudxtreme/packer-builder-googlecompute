@@ -9,8 +9,7 @@ import (
 	"io/ioutil"
 )
 
-// clientSecrets represents the client secrets of a Google Compute Engine
-// service account.
+// clientSecrets represents the client secrets of a GCE service account.
 type clientSecrets struct {
 	Web struct {
 		AuthURI     string `json:"auth_uri"`

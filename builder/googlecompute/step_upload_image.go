@@ -12,9 +12,7 @@ import (
 )
 
 // stepUploadImage represents a Packer build step that uploads GCE machine images.
-type stepUploadImage struct {
-	imageName string
-}
+type stepUploadImage int
 
 // Run executes the Packer build step that uploads a GCE machine image.
 func (s *stepUploadImage) Run(state multistep.StateBag) multistep.StepAction {
@@ -42,4 +40,5 @@ func (s *stepUploadImage) Run(state multistep.StateBag) multistep.StepAction {
 	return multistep.ActionContinue
 }
 
+// Cleanup.
 func (s *stepUploadImage) Cleanup(state multistep.StateBag) {}

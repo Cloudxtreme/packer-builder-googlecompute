@@ -17,7 +17,7 @@ import (
 )
 
 // stepCreateSSHKey represents a Packer build step that generates SSH key pairs.
-type stepCreateSSHKey struct{}
+type stepCreateSSHKey int
 
 // Run executes the Packer build step that generates SSH key pairs.
 func (s *stepCreateSSHKey) Run(state multistep.StateBag) multistep.StepAction {
@@ -32,14 +32,12 @@ func (s *stepCreateSSHKey) Run(state multistep.StateBag) multistep.StepAction {
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	// ASN.1 DER encoded form
 	priv_der := x509.MarshalPKCS1PrivateKey(priv)
 	priv_blk := pem.Block{
 		Type:    "RSA PRIVATE KEY",
 		Headers: nil,
 		Bytes:   priv_der,
 	}
-	// Marshal the public key into SSH compatible format
 	pub, err := ssh.NewPublicKey(&priv.PublicKey)
 	if err != nil {
 		err := fmt.Errorf("Error creating temporary ssh key: %s", err)
@@ -52,6 +50,6 @@ func (s *stepCreateSSHKey) Run(state multistep.StateBag) multistep.StepAction {
 	return multistep.ActionContinue
 }
 
-func (s *stepCreateSSHKey) Cleanup(state multistep.StateBag) {
-	// Nothing to clean up. SSH keys are associated with a single GCE instance.
-}
+// Cleanup.
+// Nothing to clean up. SSH keys are associated with a single GCE instance.
+func (s *stepCreateSSHKey) Cleanup(state multistep.StateBag) {}

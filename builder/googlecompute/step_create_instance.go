@@ -106,6 +106,7 @@ func (s *stepCreateInstance) Run(state multistep.StateBag) multistep.StepAction 
 	return multistep.ActionContinue
 }
 
+// Cleanup destroys the GCE instance created during the image creation process.
 func (s *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	var (
 		client = state.Get("client").(*GoogleComputeClient)
@@ -115,7 +116,6 @@ func (s *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	if s.instanceName == "" {
 		return
 	}
-	// Destroy the instance we just created
 	ui.Say("Destroying instance...")
 	operation, err := client.DeleteInstance(config.Zone, s.instanceName)
 	if err != nil {

@@ -12,12 +12,14 @@ import (
 	"github.com/mitchellh/packer/packer"
 )
 
-// stepCreateImage represents a Packer build step that creates GCE machine images.
-type stepCreateImage struct {
-	imageName string
-}
+// stepCreateImage represents a Packer build step that creates GCE machine
+// images.
+type stepCreateImage int
 
 // Run executes the Packer build step that creates a GCE machine image.
+//
+// Currently the only way to create a GCE image is to run the gcimagebundle
+// command on the running GCE instance.
 func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	var (
 		config     = state.Get("config").(config)
@@ -26,17 +28,14 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 		ui         = state.Get("ui").(packer.Ui)
 	)
 	ui.Say("Creating image...")
-	// Google Compute images must be created using the image_bundle.py utility
-	// from the target GCE instance. Next the image must be uploaded to a Google
-	// Cloud Storage bucket before it can be made available to the GCE project.
 	if config.SSHUsername != "root" {
 		sudoPrefix = "sudo "
 	}
-	outputFilename := fmt.Sprintf("%s.tar.gz", config.ImageName)
+	imageFilename := fmt.Sprintf("%s.tar.gz", config.ImageName)
 	imageBundleCmd := "/usr/bin/gcimagebundle -d /dev/sda -o /tmp/"
 	cmd := new(packer.RemoteCmd)
 	cmd.Command = fmt.Sprintf("%s%s --output_file_name %s",
-		sudoPrefix, imageBundleCmd, outputFilename)
+		sudoPrefix, imageBundleCmd, imageFilename)
 	err := cmd.StartWithUi(comm, ui)
 	if err != nil {
 		err := fmt.Errorf("Error creating image: %s", err)
@@ -44,7 +43,7 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	state.Put("image_file_name", filepath.Join("/tmp", outputFilename))
+	state.Put("image_file_name", filepath.Join("/tmp", imageFilename))
 	return multistep.ActionContinue
 }
 

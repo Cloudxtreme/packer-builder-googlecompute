@@ -17,7 +17,7 @@ import (
 	"github.com/mitchellh/packer/packer"
 )
 
-// The unique ID for this builder
+// The unique ID for this builder.
 const BuilderId = "kelseyhightower.googlecompute"
 
 // Builder represents a Packer Builder.
@@ -237,4 +237,5 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	return artifact, nil
 }
 
+// Cancel.
 func (b *Builder) Cancel() {}

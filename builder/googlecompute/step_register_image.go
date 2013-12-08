@@ -12,9 +12,7 @@ import (
 )
 
 // stepRegisterImage represents a Packer build step that registers GCE machine images.
-type stepRegisterImage struct {
-	imageName string
-}
+type stepRegisterImage int
 
 // Run executes the Packer build step that registers a GCE machine image.
 func (s *stepRegisterImage) Run(state multistep.StateBag) multistep.StepAction {
@@ -44,4 +42,5 @@ func (s *stepRegisterImage) Run(state multistep.StateBag) multistep.StepAction {
 	return multistep.ActionContinue
 }
 
+// Cleanup.
 func (s *stepRegisterImage) Cleanup(state multistep.StateBag) {}

@@ -14,7 +14,7 @@ import (
 	"code.google.com/p/google-api-go-client/compute/v1beta16"
 )
 
-// GoogleComputeClient represents a Google Compute Engine client.
+// GoogleComputeClient represents a GCE client.
 type GoogleComputeClient struct {
 	ProjectId     string
 	Service       *compute.Service
@@ -22,7 +22,7 @@ type GoogleComputeClient struct {
 	clientSecrets *clientSecrets
 }
 
-// InstanceConfig represents a Google Compute Engine instance configuration.
+// InstanceConfig represents a GCE instance configuration.
 // Used for creating machine instances.
 type InstanceConfig struct {
 	Description       string
@@ -35,8 +35,10 @@ type InstanceConfig struct {
 	Tags              *compute.Tags
 }
 
-// New return a new GoogleComputeClient. The projectId must be the project name,
-// i.e. myproject, not the project number.
+// New initializes and returns a *GoogleComputeClient.
+//
+// The projectId must be the project name, i.e. myproject, not the project
+// number.
 func New(projectId string, zone string, c *clientSecrets, pemKey []byte) (*GoogleComputeClient, error) {
 	googleComputeClient := &GoogleComputeClient{
 		ProjectId: projectId,
@@ -50,7 +52,6 @@ func New(projectId string, zone string, c *clientSecrets, pemKey []byte) (*Googl
 	if err != nil {
 		return nil, err
 	}
-	// Create the Google Compute client.
 	config := &oauth.Config{
 		ClientId: c.Web.ClientId,
 		Scope:    scopes(),
@@ -59,7 +60,6 @@ func New(projectId string, zone string, c *clientSecrets, pemKey []byte) (*Googl
 	}
 	transport := &oauth.Transport{Config: config}
 	transport.Token = token
-
 	s, err := compute.New(transport.Client())
 	if err != nil {
 		return nil, err
@@ -95,8 +95,6 @@ func (g *GoogleComputeClient) GetMachineType(name, zone string) (*compute.Machin
 func (g *GoogleComputeClient) GetImage(name string) (*compute.Image, error) {
 	var err error
 	var image *compute.Image
-	// Images are either stored in the user's project or the shared GCE
-	// image stores.
 	projects := []string{g.ProjectId, "debian-cloud", "centos-cloud"}
 	for _, project := range projects {
 		imagesGetCall := g.Service.Images.Get(project, name)
@@ -129,7 +127,6 @@ func (g *GoogleComputeClient) GetNetwork(name string) (*compute.Network, error) 
 // CreateInstance creates an instance in Google Compute Engine based on the
 // supplied instanceConfig.
 func (g *GoogleComputeClient) CreateInstance(zone string, instanceConfig *InstanceConfig) (*compute.Operation, error) {
-	// Attache disk
 	instance := &compute.Instance{
 		Description:       instanceConfig.Description,
 		Image:             instanceConfig.Image,

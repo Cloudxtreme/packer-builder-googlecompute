@@ -11,10 +11,16 @@ import (
 	"github.com/mitchellh/packer/packer"
 )
 
-// stepCreateImage represents a Packer build step that creates GCE machine images.
+// stepUpdateGsutil represents a Packer build step that updates the gsutil
+// utility to the latest version available.
 type stepUpdateGsutil int
 
-// Run executes the Packer build step that creates a GCE machine image.
+// Run executes the Packer build step that updates the gsutil utility to the
+// latest version available.
+//
+// This step is required to prevent the image creation process from hanging;
+// the image creation process utilizes the gcimagebundle cli tool which will
+// prompt to update gsutil if a newer version is available.
 func (s *stepUpdateGsutil) Run(state multistep.StateBag) multistep.StepAction {
 	var (
 		config     = state.Get("config").(config)
@@ -23,10 +29,6 @@ func (s *stepUpdateGsutil) Run(state multistep.StateBag) multistep.StepAction {
 		ui         = state.Get("ui").(packer.Ui)
 	)
 	ui.Say("Updating gsutil...")
-	// Update gsutil now to prevent image creation from hanging.
-	// The gcimagebundle command used in the create_image step calls gsutil
-	// in the background, which can hang the image creation process with a prompt
-	// to update gsutil if not running the latest version.
 	if config.SSHUsername != "root" {
 		sudoPrefix = "sudo "
 	}
@@ -43,4 +45,5 @@ func (s *stepUpdateGsutil) Run(state multistep.StateBag) multistep.StepAction {
 	return multistep.ActionContinue
 }
 
+// Cleanup.
 func (s *stepUpdateGsutil) Cleanup(state multistep.StateBag) {}
